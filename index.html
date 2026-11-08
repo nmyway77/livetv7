@@ -208,7 +208,9 @@ $("tabs").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   currentCat = b.dataset.cat; renderTabs(); renderGrid();
   $("grid").scrollTop = 0;
-  if (currentCat === "뉴스") { try { history.replaceState(null, "", "#" + "ytn"); } catch(err) {} play("ytn"); }   // 뉴스 탭 = YTN 바로 재생
+  // 탭(지상파·뉴스·스포츠…)을 누르면 그 탭의 첫 채널이 바로 재생 (뉴스 = YTN)
+  const first = CHANNELS.find(c => currentCat==="전체" ? true : currentCat==="즐겨찾기" ? favs.includes(c.slug) : c.cat===currentCat);
+  if (first) { try { history.replaceState(null, "", "#" + first.slug); } catch(err) {} play(first.slug); }
 });
 side.addEventListener("click", e => {
   const f = e.target.closest("[data-fav]");
