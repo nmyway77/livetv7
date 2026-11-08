@@ -16,6 +16,9 @@
   /* 상단 카테고리 탭 */
   .tabs { height:var(--tabsH); display:flex; align-items:center; gap:8px; padding:0 16px; background:var(--card); border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none; }
   .tabs::-webkit-scrollbar { display:none; }
+  /* 가운데 정렬 (넘치면 왼쪽부터 가로 스크롤) */
+  .tabs > :first-child { margin-left:auto; }
+  .tabs > :last-child { margin-right:auto; }
   .tabs button { flex:none; border:1px solid var(--line); background:var(--card); padding:7px 16px; border-radius:20px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text); white-space:nowrap; }
   .tabs button:hover { border-color:#b9bfcc; }
   .tabs button.on { background:var(--text); color:#fff; border-color:var(--text); }
