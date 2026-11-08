@@ -192,14 +192,20 @@ async function play(slug){
   } else if (c.type === "hls") {
     box.innerHTML = `<video id="v" controls autoplay muted playsinline></video>`;
     const v = $("v");
-    if (v.canPlayType("application/vnd.apple.mpegurl")) {   // 사파리/iOS는 기본 지원
+    try { await loadHlsJs(); } catch(e) {}
+    if (c.slug !== location.hash.slice(1) && location.hash) return;   // 그 사이 다른 채널을 눌렀으면 중단
+    if (window.Hls && Hls.isSupported()) {                 // 크롬·엣지·안드로이드: hls.js
+      hls = new Hls({ lowLatencyMode:true });
+      hls.on(Hls.Events.ERROR, (ev, d) => {
+        if (!d.fatal) return;
+        if (d.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
+        else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+      });
+      hls.loadSource(c.url); hls.attachMedia(v);
+    } else if (v.canPlayType("application/vnd.apple.mpegurl")) {   // 아이폰·사파리: 기본 재생
       v.src = c.url;
     } else {
-      try {
-        await loadHlsJs();
-        if (Hls.isSupported()) { hls = new Hls(); hls.loadSource(c.url); hls.attachMedia(v); }
-        else box.innerHTML = `<div class="empty">이 브라우저는 HLS를 지원하지 않습니다</div>`;
-      } catch(e) { box.innerHTML = `<div class="empty">재생 모듈을 불러오지 못했습니다</div>`; }
+      box.innerHTML = `<div class="empty">이 브라우저는 HLS를 지원하지 않습니다</div>`;
     }
   }
   renderGrid();
