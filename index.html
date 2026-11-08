@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>실시간 TV 샘플</title>
+<title>실시간 TV</title>
 <meta name="description" content="방송사 공식 스트림을 모아 보는 실시간 TV 샘플 페이지">
 <meta property="og:title" content="실시간 TV 샘플">
 <meta property="og:type" content="video.other">
@@ -33,7 +33,7 @@
 </style>
 </head>
 <body>
-<header>📺 실시간<span>TV</span> 샘플</header>
+<header>📺 실시간<span>TV</span></header>
 <main>
   <div class="player" id="player"><div class="empty">채널을 선택하세요</div></div>
   <div class="now" id="now"></div>
@@ -48,10 +48,87 @@
    type: "hls"          → url에 .m3u8 주소 (방송사 공식 주소, 약관 확인 후 사용)
 */
 const CHANNELS = [
-  { slug:"ytn",  name:"YTN",       cat:"뉴스",   type:"youtube", id:"B0-AnhL12vw" },
-  { slug:"hls-test", name:"HLS 테스트", cat:"테스트", type:"hls",
-    url:"https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" },
-  // { slug:"news2", name:"채널이름", cat:"뉴스", type:"youtube-live", id:"UCxxxxxxxxxxxxxxxxxxxxxx" },
+  {"slug": "kbs1", "name": "KBS1", "cat": "지상파", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=11"},
+  {"slug": "kbs2", "name": "KBS2", "cat": "지상파", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=12"},
+  {"slug": "ebs1", "name": "EBS1", "cat": "지상파", "type": "hls", "url": "https://ebsonair.ebs.co.kr/groundwavefamilypc/familypc1m/playlist.m3u8"},
+  {"slug": "ebs2", "name": "EBS2", "cat": "지상파", "type": "hls", "url": "https://ebsonair.ebs.co.kr/ebs2familypc/familypc1m/playlist.m3u8"},
+  {"slug": "ch-076", "name": "EBS 플러스1", "cat": "지상파", "type": "hls", "url": "https://ebsonair.ebs.co.kr/plus1familypc/familypc1m/playlist.m3u8"},
+  {"slug": "ch-077", "name": "EBS 플러스2", "cat": "지상파", "type": "hls", "url": "https://ebsonair.ebs.co.kr/plus2familypc/familypc1m/playlist.m3u8"},
+  {"slug": "ebs-english", "name": "EBS English", "cat": "지상파", "type": "hls", "url": "https://ebsonair.ebs.co.kr/plus3familypc/familypc1m/playlist.m3u8"},
+  {"slug": "ch-004", "name": "서울경제TV", "cat": "뉴스", "type": "youtube", "id": "ciA-0rInLwQ"},
+  {"slug": "ch-008", "name": "MBC뉴스", "cat": "뉴스", "type": "youtube", "id": "q9bM12ucTIY"},
+  {"slug": "ch-010", "name": "연합뉴스경제TV", "cat": "뉴스", "type": "youtube", "id": "yhpbioCP6nA"},
+  {"slug": "ch-017", "name": "KBS뉴스", "cat": "뉴스", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=81"},
+  {"slug": "ytn", "name": "YTN", "cat": "뉴스", "type": "youtube", "id": "aZyD6EPl6KU"},
+  {"slug": "ch-021", "name": "연합뉴스TV", "cat": "뉴스", "type": "youtube", "id": "6QZ_qc75ihU"},
+  {"slug": "ytn2", "name": "YTN2", "cat": "뉴스", "type": "youtube", "id": "g4z6U1yFGKk"},
+  {"slug": "ytn-dmb", "name": "YTN dmb", "cat": "뉴스", "type": "youtube", "id": "B0-AnhL12vw"},
+  {"slug": "ch-079", "name": "YTN 사이언스", "cat": "뉴스", "type": "youtube", "id": "6FbEE0gmnrE"},
+  {"slug": "ch-112", "name": "연합뉴스TV JOB", "cat": "뉴스", "type": "youtube", "id": "WV9oNOhnLf8"},
+  {"slug": "ch-122", "name": "머니투데이방송", "cat": "뉴스", "type": "youtube", "id": "lb1oB2feqkQ"},
+  {"slug": "ch-125", "name": "한국경제TV", "cat": "뉴스", "type": "youtube", "id": "VlaCnp1fxI8"},
+  {"slug": "ch-126", "name": "이데일리TV", "cat": "뉴스", "type": "youtube", "id": "5cFoz90FUMk"},
+  {"slug": "ch-127", "name": "매일경제TV", "cat": "뉴스", "type": "youtube", "id": "s9xL1DpBsfQ"},
+  {"slug": "ktv", "name": "KTV", "cat": "뉴스", "type": "hls", "url": "https://hlive.ktv.go.kr/live/klive_h.stream/playlist.m3u8"},
+  {"slug": "ch-018", "name": "야인시대", "cat": "예능·교양", "type": "youtube", "id": "l1ivJtlM7gE"},
+  {"slug": "ch-019", "name": "대탈출", "cat": "예능·교양", "type": "youtube", "id": "yNc5W-Bjpcw"},
+  {"slug": "ch-022", "name": "푸른거탑+황금거탑", "cat": "예능·교양", "type": "youtube", "id": "H3uur6g_9CA"},
+  {"slug": "ch-023", "name": "호텔 델루나", "cat": "예능·교양", "type": "youtube", "id": "Wsz_If9wZ7g"},
+  {"slug": "ch-027", "name": "렛츠고 시간탐험대", "cat": "예능·교양", "type": "youtube", "id": "vuJoalX0ke4"},
+  {"slug": "ch-028", "name": "벌거벗은 세계사", "cat": "예능·교양", "type": "youtube", "id": "b5UeAVqz4cI"},
+  {"slug": "ch-029", "name": "런닝맨", "cat": "예능·교양", "type": "youtube", "id": "d8OvbUAxaec"},
+  {"slug": "ch-032", "name": "사극", "cat": "예능·교양", "type": "youtube", "id": "1bROU5AqM8w"},
+  {"slug": "ch-034", "name": "시트콤", "cat": "예능·교양", "type": "youtube", "id": "DR9Lzmyftwc"},
+  {"slug": "ch-036", "name": "인간극장", "cat": "예능·교양", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=nvod9"},
+  {"slug": "ch-037", "name": "1박2일", "cat": "예능·교양", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=nvod6"},
+  {"slug": "kbs-story", "name": "KBS STORY", "cat": "예능·교양", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=N94"},
+  {"slug": "kbs-life", "name": "KBS LIFE", "cat": "예능·교양", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=N93"},
+  {"slug": "ch-102", "name": "역사저널 그날", "cat": "예능·교양", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=nvod8"},
+  {"slug": "jtbc-golf", "name": "JTBC GOLF", "cat": "스포츠", "type": "youtube", "id": "y0Fa_lEljWQ"},
+  {"slug": "ch-133", "name": "GS샵", "cat": "홈쇼핑", "type": "hls", "url": "https://gstv-gsshop.gsshop.com/gsshop_hd/_definst_/gsshop_hd.stream/playlist.m3u8"},
+  {"slug": "ch-134", "name": "GS마이샵", "cat": "홈쇼핑", "type": "hls", "url": "https://gstv-myshop.gsshop.com/myshop_hd/_definst_/myshop_hd.stream/playlist.m3u8"},
+  {"slug": "ch-135", "name": "현대홈쇼핑", "cat": "홈쇼핑", "type": "hls", "url": "https://livejj.hyundaihmall.com:8443/live/ngrp:hmall.stream_pc/playlist.m3u8"},
+  {"slug": "ch-136", "name": "현대홈쇼핑+샵", "cat": "홈쇼핑", "type": "hls", "url": "https://dtvstreaming.hyundaihmall.com/newcjp3/_definst_/newcjpstream.smil/playlist.m3u8"},
+  {"slug": "ch-138", "name": "CJ온스타일", "cat": "홈쇼핑", "type": "hls", "url": "https://live-ch1.cjonstyle.net/cjmalllive/_definst_/stream2/playlist.m3u8"},
+  {"slug": "ch-139", "name": "CJ온스타일+", "cat": "홈쇼핑", "type": "hls", "url": "https://live-ch2.cjmall.net/cjosplus/_definst_/live2/playlist.m3u8"},
+  {"slug": "ch-143", "name": "W쇼핑", "cat": "홈쇼핑", "type": "hls", "url": "https://liveout.catenoid.net/live-05-wshopping/wshopping_1500k/playlist.m3u8"},
+  {"slug": "ch-146", "name": "공영쇼핑", "cat": "홈쇼핑", "type": "hls", "url": "https://etv.publichs.com/live5.stream/playlist.m3u8"},
+  {"slug": "ch-148", "name": "KT알파 쇼핑", "cat": "홈쇼핑", "type": "hls", "url": "https://livetv.kshop.co.kr/klive/_definst_/smil:klive.smil/playlist.m3u8"},
+  {"slug": "ch-149", "name": "홈앤쇼핑", "cat": "홈쇼핑", "type": "hls", "url": "https://s30.qtcdn.co.kr/media/liveM3U8/idx/484074138/enc/1790577012/playlist.m3u8"},
+  {"slug": "qvc", "name": "QVC", "cat": "홈쇼핑", "type": "youtube", "id": "haFjd0713ZQ"},
+  {"slug": "tbs", "name": "TBS", "cat": "지역", "type": "hls", "url": "https://cdntv.tbs.seoul.kr/tbs/_definst_/tbs_tv_web_720.smil/playlist.m3u8"},
+  {"slug": "ch-120", "name": "서경방송", "cat": "지역", "type": "hls", "url": "https://live.iscs.co.kr/m_live/480p.stream/playlist.m3u8"},
+  {"slug": "cbs", "name": "CBS", "cat": "종교", "type": "youtube", "id": "cxtw2RuOYac"},
+  {"slug": "ch-106", "name": "C채널", "cat": "종교", "type": "youtube", "id": "CDFzYy3a4v8"},
+  {"slug": "ch-026", "name": "올데이 케이팝 라이브", "cat": "음악", "type": "youtube", "id": "NbD_JdcPjgY"},
+  {"slug": "ch-033", "name": "토마토클래식", "cat": "음악", "type": "youtube", "id": "Bc4zsrcMsro"},
+  {"slug": "ch-123", "name": "국악방송", "cat": "음악", "type": "hls", "url": "https://mgugaklive.nowcdn.co.kr/gugakvideo/gugakvideo.stream/playlist.m3u8"},
+  {"slug": "kronehit-tv", "name": "Kronehit TV", "cat": "음악", "type": "hls", "url": "https://bitcdn-kronehit.bitmovin.com/v2/hls/playlist.m3u8"},
+  {"slug": "classic-arts-showcase", "name": "Classic Arts Showcase", "cat": "음악", "type": "hls", "url": "https://classicarts.akamaized.net/hls/live/1024257/CAS/master.m3u8"},
+  {"slug": "kbs-kids", "name": "KBS KIDS", "cat": "키즈", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=N96"},
+  {"slug": "ebs-kids", "name": "EBS KIDS", "cat": "키즈", "type": "hls", "url": "https://ebsonair.ebs.co.kr/ebsufamilypc/familypc1m/playlist.m3u8"},
+  {"slug": "ch-101", "name": "어린이 만화동산", "cat": "키즈", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=nvod10"},
+  {"slug": "g-i-joe", "name": "G.I. JOE", "cat": "키즈", "type": "youtube", "id": "TZ3mxF4U__k"},
+  {"slug": "ch-031", "name": "한강", "cat": "라이프·캠", "type": "youtube", "id": "RVvYQghFCXk"},
+  {"slug": "kbs-live-dokdo", "name": "KBS LIVE Dokdo", "cat": "라이프·캠", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=cctv01"},
+  {"slug": "ch-069", "name": "롯데월드", "cat": "라이프·캠", "type": "youtube", "id": "GRwcf4_ZDYo"},
+  {"slug": "ch-070", "name": "송정해수욕장", "cat": "라이프·캠", "type": "youtube", "id": "NBZdNZYF1gI"},
+  {"slug": "ch-071", "name": "광안대교", "cat": "라이프·캠", "type": "youtube", "id": "m_EmGDe_P84"},
+  {"slug": "ch-121", "name": "토마토리빙", "cat": "라이프·캠", "type": "youtube", "id": "M7a5wVnkcug"},
+  {"slug": "shibuya-crossing", "name": "Shibuya Crossing", "cat": "라이프·캠", "type": "youtube", "id": "dfVK7ld38Ys"},
+  {"slug": "wonder", "name": "Wonder", "cat": "라이프·캠", "type": "hls", "url": "https://wonder-samsung-uk.amagi.tv/playlist.m3u8"},
+  {"slug": "kbs-world-tv", "name": "KBS WORLD TV", "cat": "해외", "type": "link", "url": "https://onair.kbs.co.kr/index.html?sname=onair&stype=live&ch_code=14"},
+  {"slug": "france-24", "name": "FRANCE 24", "cat": "해외", "type": "youtube", "id": "HvZt-nh9sGg"},
+  {"slug": "bloomberg", "name": "Bloomberg", "cat": "해외", "type": "youtube", "id": "QB5BNdBFujE"},
+  {"slug": "ntv-news-24", "name": "NTV News 24", "cat": "해외", "type": "youtube", "id": "t9kwjZBLI-A"},
+  {"slug": "tbs-news-dig", "name": "TBS NEWS DIG", "cat": "해외", "type": "youtube", "id": "Anr15FA9OCI"},
+  {"slug": "nhk-world", "name": "NHK WORLD", "cat": "해외", "type": "youtube", "id": "IimtbuqYIE8"},
+  {"slug": "ann", "name": "ANN", "cat": "해외", "type": "youtube", "id": "coYw-eVU0Ks"},
+  {"slug": "nbn", "name": "NBN", "cat": "해외", "type": "youtube", "id": "-C6FE2m7kX8"},
+  {"slug": "kts", "name": "KTS", "cat": "해외", "type": "youtube", "id": "j0SW3bmbiMc"},
+  {"slug": "sky-news", "name": "Sky News", "cat": "해외", "type": "youtube", "id": "umLWFz4izTM"},
+  {"slug": "cna", "name": "CNA", "cat": "해외", "type": "hls", "url": "https://d2e1asnsl7br7b.cloudfront.net/7782e205e72f43aeb4a48ec97f66ebbe/index.m3u8"},
+  {"slug": "abc-news", "name": "ABC News", "cat": "해외", "type": "youtube", "id": "KQhNZQ_Uag8"}
 ];
 
 const FAV_KEY = "liveTvFavs";
@@ -78,7 +155,7 @@ function renderGrid(){
     <div class="card ${c.slug===cur?'on':''}" data-slug="${c.slug}">
       <button class="star ${favs.includes(c.slug)?'on':''}" data-fav="${c.slug}">★</button>
       <b>${c.name}</b>
-      <div class="meta"><span class="badge">LIVE</span>${c.cat}</div>
+      <div class="meta"><span class="badge" style="${c.type==='link'?'background:#6b7385':''}">${c.type==='link'?'LINK':'LIVE'}</span>${c.cat}</div>
     </div>`).join("") || `<p style="color:#888">채널이 없습니다.</p>`;
 }
 
@@ -99,13 +176,17 @@ async function play(slug){
   if (hls) { hls.destroy(); hls = null; }
   const box = $("player");
   $("now").innerHTML = `▶ ${c.name}<small>${c.cat}</small>`;
-  document.title = `${c.name} 실시간 - 실시간 TV 샘플`;
+  document.title = `${c.name} 실시간 - 실시간 TV`;
 
   if (c.type === "youtube" || c.type === "youtube-live") {
     const src = c.type === "youtube"
       ? `https://www.youtube.com/embed/${c.id}?autoplay=1&mute=1&playsinline=1`
       : `https://www.youtube.com/embed/live_stream?channel=${c.id}&autoplay=1&mute=1&playsinline=1`;
     box.innerHTML = `<iframe src="${src}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+  } else if (c.type === "link") {
+    box.innerHTML = `<div class="empty" style="flex-direction:column;gap:12px">
+      <div>${c.name}은(는) 방송사 공식 플레이어에서 재생됩니다</div>
+      <a href="${c.url}" target="_blank" rel="noopener" style="color:#fff;background:#e5384f;padding:10px 18px;border-radius:8px;text-decoration:none">KBS 온에어에서 보기 ↗</a></div>`;
   } else if (c.type === "hls") {
     box.innerHTML = `<video id="v" controls autoplay muted playsinline></video>`;
     const v = $("v");
