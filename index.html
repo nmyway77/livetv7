@@ -175,6 +175,8 @@ async function play(slug){
   if (!c) return;
   if (hls) { hls.destroy(); hls = null; }
   const box = $("player");
+  const oldVideo = box.querySelector("video");          // 이전 영상 완전 정지
+  if (oldVideo) { oldVideo.pause(); oldVideo.removeAttribute("src"); oldVideo.load(); }
   $("now").innerHTML = `▶ ${c.name}<small>${c.cat}</small>`;
   document.title = `${c.name} 실시간 - 실시간 TV`;
 
