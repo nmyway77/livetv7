@@ -133,7 +133,22 @@ function placeSide(){
 placeSide();
 window.addEventListener("resize", placeSide);
 
-function saveFavs(){ try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch(e) {} }
+/* 즐겨찾기 보관: myway.kr 안에서 열리면 myway.kr(부모 페이지) 저장소에 보관
+   → 이 페이지는 다른 주소(github.io)라 핸드폰 브라우저가 껐다 켜면 지우는 경우가 있어서. 단독으로 열면 여기 저장소 사용 */
+const FAV_PARENTS = ["https://myway.kr", "https://www.myway.kr"];
+const IN_FRAME = (() => { try { return window.parent !== window; } catch(e) { return true; } })();
+function toParent(msg){ if (!IN_FRAME) return; FAV_PARENTS.forEach(o => { try { window.parent.postMessage(msg, o); } catch(e) {} }); }
+function saveFavs(){ try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch(e) {} toParent({ type:"LIVETV_FAVS_SET", favs: favs }); }
+window.addEventListener("message", e => {
+  if (!FAV_PARENTS.includes(e.origin)) return;
+  const d = e.data; if (!d || d.type !== "LIVETV_FAVS") return;
+  if (Array.isArray(d.favs)) {
+    favs = d.favs.filter(x => typeof x === "string");
+    try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch(err) {}
+    if (typeof renderGrid === "function") renderGrid();
+  } else if (favs.length) toParent({ type:"LIVETV_FAVS_SET", favs: favs });   // 부모에 아직 없으면 여기 것을 처음 한 번 옮겨 둠
+});
+toParent({ type:"LIVETV_FAVS_GET" });
 
 /* 상단 탭: 스포츠·인터넷방송·지역·종교·키즈·라이프·캠 탭은 숨김 (채널은 '전체'에 그대로)
    그 자리에 채널 바로가기 탭 [SOOP] [MLB다시보기] [치지직] → 누르면 그 채널 화면 바로, 맨 뒤 [해외] */
