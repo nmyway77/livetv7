@@ -74,6 +74,9 @@
     .player, .now { max-width:none; border-radius:8px; }
     .side { width:auto; border-left:0; }
     .list { overflow:visible; display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); }
+    /* 핸드폰 SBS·채널A: 방송사 페이지를 화면 안에 — 영상 + 상단 메뉴가 보이게 조금 더 높게 */
+    .stage.full { padding:8px 8px 4px; }
+    .stage.full .player { flex:none; height:min(70vh, calc(56.25vw + 140px)); border-radius:8px; }
   }
 
   * { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
@@ -166,7 +169,8 @@ async function play(slug){
   if (!c) return;
   stopAll();
   curSlug = slug;
-  const ext = c.type === "link" && (IS_MOBILE || c.newwin);   // 핸드폰, 또는 임베드(화면 안 재생) 막힌 채널(MBC·TV조선) → 별도 창
+  const MOB_INLINE = /sbs\.co\.kr|ichannela\.com/i;          // SBS·채널A는 핸드폰에서도 화면 안에서 바로 재생
+  const ext = c.type === "link" && (c.newwin || (IS_MOBILE && !MOB_INLINE.test(c.url)));   // 핸드폰(KBS 등), 또는 임베드 막힌 채널(MBC·TV조선) → 별도 창
   $("stage").classList.toggle("full", c.type === "link" && !ext);
   const box = $("player");
   $("now").innerHTML = `▶ ${esc(c.name)}<small>${esc(c.cat)}</small>`;
@@ -184,8 +188,8 @@ async function play(slug){
         <div class="ttl">${esc(c.name)}</div>
         <div class="btn">▶ 눌러서 보기 ↗</div>
         <div class="sub">${IS_MOBILE ? "핸드폰에서는 방송사 공식 페이지(새 창)로 열려요" : "이 채널은 방송사가 화면 안 재생을 막아 별도 창으로 열려요"}</div></a>`;
-    } else {                    // PC: 지상파도 화면에서 바로 재생
-      box.innerHTML = `<iframe src="${esc(c.url)}"${/sbs\.co\.kr/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""} referrerpolicy="no-referrer" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    } else {                    // PC: 지상파도 화면에서 바로 재생 (핸드폰은 SBS·채널A만) — SBS·채널A는 앱 확인창 차단(sandbox)
+      box.innerHTML = `<iframe src="${esc(c.url)}"${/sbs\.co\.kr|ichannela\.com/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""} referrerpolicy="no-referrer" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
     }
   } else if (c.type === "hls") {
     box.innerHTML = `<video id="v" controls autoplay muted playsinline></video>`;
