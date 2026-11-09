@@ -257,12 +257,17 @@ const RET_KEY = "liveTvReturnV1";
 $("player").addEventListener("click", e => {
   const a = e.target.closest("a.tap"); if (!a || !IS_MOBILE) return;
   e.preventDefault();
-  try { sessionStorage.setItem(RET_KEY, JSON.stringify({ slug: curSlug, t: Date.now() })); } catch(err) {}
+  try { sessionStorage.setItem(RET_KEY, JSON.stringify({ slug: curSlug, cat: currentCat, y: side.scrollTop, t: Date.now() })); } catch(err) {}
   try { (window.top || window).location.href = a.href; } catch(err) { window.open(a.href, "_blank", "noopener"); }
 });
 let retSlug = "";
 try { const r = JSON.parse(sessionStorage.getItem(RET_KEY) || "null"); sessionStorage.removeItem(RET_KEY);
-      if (r && r.slug && Date.now() - r.t < 3*3600*1000 && CHANNELS.some(c => c.slug === r.slug)) retSlug = r.slug; } catch(err) {}
+      if (r && r.slug && Date.now() - r.t < 3*3600*1000 && CHANNELS.some(c => c.slug === r.slug)) {
+        retSlug = r.slug;
+        if (typeof r.cat === "string") { currentCat = r.cat; renderTabs(); renderGrid(); }   // 나갔던 탭(예: 치지직) 그대로
+        if (r.y) requestAnimationFrame(() => { side.scrollTop = r.y; });                   // 채널 목록 스크롤 위치도
+        requestAnimationFrame(() => { const t = $("tabs").querySelector("button.on"); if (t) { const tb = $("tabs"); tb.scrollLeft = t.offsetLeft - (tb.clientWidth - t.offsetWidth) / 2; } });   // 탭바에서 그 탭이 보이게
+      } } catch(err) {}
 play(location.hash ? location.hash.slice(1) : (retSlug || "ytn"));   // 초기화면 = YTN (뉴스 먼저), 백버튼 복귀 시 나갔던 채널
 </script>
 <script>
