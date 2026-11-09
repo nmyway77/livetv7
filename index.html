@@ -239,7 +239,19 @@ side.addEventListener("click", e => {
 window.addEventListener("hashchange", () => { const s = location.hash.slice(1); if (s && s !== curSlug) play(s); });
 
 renderTabs(); renderGrid();
-play(location.hash ? location.hash.slice(1) : "ytn");   // 초기화면 = YTN (뉴스 먼저)
+/* 핸드폰: 화살표(KBS·MBC 등)를 누르면 새 탭 대신 같은 창(최상위)에서 열기 → 백버튼으로 myway.kr 복귀.
+   돌아오면 나갔던 채널을 다시 보여 줌 (그 탭 세션에서 1회만) */
+const RET_KEY = "liveTvReturnV1";
+$("player").addEventListener("click", e => {
+  const a = e.target.closest("a.tap"); if (!a || !IS_MOBILE) return;
+  e.preventDefault();
+  try { sessionStorage.setItem(RET_KEY, JSON.stringify({ slug: curSlug, t: Date.now() })); } catch(err) {}
+  try { (window.top || window).location.href = a.href; } catch(err) { window.open(a.href, "_blank", "noopener"); }
+});
+let retSlug = "";
+try { const r = JSON.parse(sessionStorage.getItem(RET_KEY) || "null"); sessionStorage.removeItem(RET_KEY);
+      if (r && r.slug && Date.now() - r.t < 3*3600*1000 && CHANNELS.some(c => c.slug === r.slug)) retSlug = r.slug; } catch(err) {}
+play(location.hash ? location.hash.slice(1) : (retSlug || "ytn"));   // 초기화면 = YTN (뉴스 먼저), 백버튼 복귀 시 나갔던 채널
 </script>
 <script>
 /* 복사 방지 */
