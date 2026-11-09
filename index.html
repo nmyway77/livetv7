@@ -138,7 +138,7 @@ function saveFavs(){ try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); 
 /* 상단 탭: 스포츠·인터넷방송·지역·종교·키즈·라이프·캠 탭은 숨김 (채널은 '전체'에 그대로)
    그 자리에 채널 바로가기 탭 [SOOP] [MLB다시보기] [치지직] → 누르면 그 채널 화면 바로, 맨 뒤 [해외] */
 const HIDE_CATS = ["스포츠", "인터넷방송", "지역", "종교", "키즈", "라이프·캠", "해외"];
-const WIDE_TABS = ["@soop", "@mlb"];   // 이 탭은 채널 목록 없이 화면 전체 (SOOP·MLB다시보기)
+const WIDE_TABS = ["@soop"];   // 이 탭은 채널 목록 없이 화면 전체 (SOOP)
 const DIRECT_TABS = [["SOOP", "soop"], ["MLB다시보기", "mlb"], ["치지직", "chzzk"]];
 const dirSlug = cat => (cat && cat.charAt(0) === "@") ? cat.slice(1) : "";
 function inCat(c){
@@ -146,8 +146,9 @@ function inCat(c){
   if (d) { const t = CHANNELS.find(x => x.slug === d); return !!t && c.cat === t.cat; }   // 바로가기 탭: 그 채널이 속한 분류 목록
   return currentCat==="전체" ? true : currentCat==="즐겨찾기" ? favs.includes(c.slug) : c.cat===currentCat;
 }
-const MOB_INLINE = /sbs\.co\.kr|ichannela\.com|sooplive\.co\.kr|mlblive\.net/i;   // SBS·채널A·SOOP·MLB는 핸드폰에서도 화면 안에서 바로 재생
-const isExt = c => c.type === "link" && (!!c.newwin || (IS_MOBILE && !MOB_INLINE.test(c.url)));   // 화살표(별도 창) 채널: 치지직·MBC·TV조선, 핸드폰 KBS 등
+const MOB_INLINE = /sbs\.co\.kr|ichannela\.com|sooplive\.co\.kr/i;   // SBS·채널A·SOOP은 핸드폰에서도 화면 안에서 바로 재생
+const ARROW_SLUGS = ["mlb"];   // PC·핸드폰 모두 화살표(별도 창): MLB다시보기
+const isExt = c => c.type === "link" && (!!c.newwin || ARROW_SLUGS.includes(c.slug) || (IS_MOBILE && !MOB_INLINE.test(c.url)));   // 화살표(별도 창) 채널: 치지직·MBC·TV조선, 핸드폰 KBS 등
 function renderTabs(){
   document.body.classList.toggle("wide", WIDE_TABS.includes(currentCat));
   const cats = ["전체", "즐겨찾기", ...new Set(CHANNELS.map(c => c.cat))].filter(c => !HIDE_CATS.includes(c));
