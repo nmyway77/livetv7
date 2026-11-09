@@ -127,18 +127,31 @@ window.addEventListener("resize", placeSide);
 
 function saveFavs(){ try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch(e) {} }
 
+/* 상단 탭: 스포츠·인터넷방송·지역·종교·키즈·라이프·캠 탭은 숨김 (채널은 '전체'에 그대로)
+   그 자리에 채널 바로가기 탭 [SOOP] [MLB다시보기] [치지직] → 누르면 그 채널 화면 바로, 맨 뒤 [해외] */
+const HIDE_CATS = ["스포츠", "인터넷방송", "지역", "종교", "키즈", "라이프·캠", "해외"];
+const DIRECT_TABS = [["SOOP", "soop"], ["MLB다시보기", "mlb"], ["치지직", "chzzk"]];
+const dirSlug = cat => (cat && cat.charAt(0) === "@") ? cat.slice(1) : "";
+function inCat(c){
+  const d = dirSlug(currentCat);
+  if (d) { const t = CHANNELS.find(x => x.slug === d); return !!t && c.cat === t.cat; }   // 바로가기 탭: 그 채널이 속한 분류 목록
+  return currentCat==="전체" ? true : currentCat==="즐겨찾기" ? favs.includes(c.slug) : c.cat===currentCat;
+}
+const MOB_INLINE = /sbs\.co\.kr|ichannela\.com|sooplive\.co\.kr|mlblive\.net/i;   // SBS·채널A·SOOP·MLB는 핸드폰에서도 화면 안에서 바로 재생
+const isExt = c => c.type === "link" && (!!c.newwin || (IS_MOBILE && !MOB_INLINE.test(c.url)));   // 화살표(별도 창) 채널: 치지직·MBC·TV조선, 핸드폰 KBS 등
 function renderTabs(){
-  const cats = ["전체", "즐겨찾기", ...new Set(CHANNELS.map(c => c.cat))];
-  $("tabs").innerHTML = cats.map(c =>
-    `<button class="${c===currentCat?'on':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join("");
+  const cats = ["전체", "즐겨찾기", ...new Set(CHANNELS.map(c => c.cat))].filter(c => !HIDE_CATS.includes(c));
+  const btn = (cat, label) => `<button class="${cat===currentCat?'on':''}" data-cat="${esc(cat)}">${esc(label)}</button>`;
+  $("tabs").innerHTML = cats.map(c => btn(c, c)).join("")
+    + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("")
+    + (CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "");
 }
 
 function renderGrid(){
-  const list = CHANNELS.filter(c =>
-    currentCat==="전체" ? true : currentCat==="즐겨찾기" ? favs.includes(c.slug) : c.cat===currentCat);
+  const list = CHANNELS.filter(inCat);
   $("grid").innerHTML = list.map(c => {
     const lk = c.type === "link";
-    const badge = lk ? ((IS_MOBILE || c.newwin) ? '<span class="badge" style="background:#6b7385">LINK</span>' : '<span class="badge">LIVE</span>') : '<span class="badge">LIVE</span>';
+    const badge = lk ? (isExt(c) ? '<span class="badge" style="background:#6b7385">LINK</span>' : '<span class="badge">LIVE</span>') : '<span class="badge">LIVE</span>';
     return `<div class="card ${c.slug===curSlug?'on':''}" data-slug="${esc(c.slug)}">
       <button class="star ${favs.includes(c.slug)?'on':''}" data-fav="${esc(c.slug)}" title="즐겨찾기">★</button>
       <b>${esc(c.name)}</b>
@@ -169,8 +182,7 @@ async function play(slug){
   if (!c) return;
   stopAll();
   curSlug = slug;
-  const MOB_INLINE = /sbs\.co\.kr|ichannela\.com/i;          // SBS·채널A는 핸드폰에서도 화면 안에서 바로 재생
-  const ext = c.type === "link" && (c.newwin || (IS_MOBILE && !MOB_INLINE.test(c.url)));   // 핸드폰(KBS 등), 또는 임베드 막힌 채널(MBC·TV조선) → 별도 창
+  const ext = isExt(c);   // 핸드폰(KBS 등), 또는 임베드 막힌 채널(MBC·TV조선) → 별도 창
   $("stage").classList.toggle("full", c.type === "link" && !ext);
   const box = $("player");
   $("now").innerHTML = `▶ ${esc(c.name)}<small>${esc(c.cat)}</small>`;
@@ -219,8 +231,8 @@ $("tabs").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   currentCat = b.dataset.cat; renderTabs(); renderGrid();
   $("grid").scrollTop = 0; side.scrollTop = 0;
-  // 탭(지상파·뉴스·스포츠…)을 누르면 그 탭의 첫 채널이 바로 재생 (뉴스 = YTN)
-  const first = CHANNELS.find(c => currentCat==="전체" ? true : currentCat==="즐겨찾기" ? favs.includes(c.slug) : c.cat===currentCat);
+  // 탭(지상파·뉴스…)을 누르면 그 탭의 첫 채널이 바로 재생 (뉴스 = YTN), 바로가기 탭은 그 채널
+  const first = dirSlug(currentCat) ? CHANNELS.find(c => c.slug === dirSlug(currentCat)) : CHANNELS.find(inCat);
   if (first) { try { history.replaceState(null, "", "#" + first.slug); } catch(err) {} play(first.slug); }
 });
 side.addEventListener("click", e => {
