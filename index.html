@@ -62,9 +62,12 @@
   .notice a { color:#4b5bd6; }
 
   /* 핸드폰·좁은 화면: 탭+화면 위 고정, 채널은 아래로 스크롤 */
+  /* 핸드폰: 화면(.top)은 고정, 채널 목록(.side)만 자체 스크롤 → 채널이 TV 화면 뒤로 사라짐 */
   @media (max-width: 760px) {
-    body { overflow:auto; }
-    .top { height:auto; position:sticky; top:0; z-index:5; background:var(--bg); }
+    html, body { height:100%; height:100dvh; }
+    body { overflow:hidden; display:flex; flex-direction:column; }
+    .top { flex:none; height:auto; position:relative; z-index:5; background:var(--bg); box-shadow:0 2px 6px rgba(0,0,0,.06); }
+    .side { flex:1 1 auto; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; }
     .tabs { padding:0 10px; }
     .wrap { height:auto; display:block; }
     .stage { padding:8px 8px 4px; }
@@ -182,7 +185,7 @@ async function play(slug){
         <div class="btn">▶ 눌러서 보기 ↗</div>
         <div class="sub">${IS_MOBILE ? "핸드폰에서는 방송사 공식 페이지(새 창)로 열려요" : "이 채널은 방송사가 화면 안 재생을 막아 별도 창으로 열려요"}</div></a>`;
     } else {                    // PC: 지상파도 화면에서 바로 재생
-      box.innerHTML = `<iframe src="${esc(c.url)}" referrerpolicy="no-referrer" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+      box.innerHTML = `<iframe src="${esc(c.url)}"${/sbs\.co\.kr/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""} referrerpolicy="no-referrer" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
     }
   } else if (c.type === "hls") {
     box.innerHTML = `<video id="v" controls autoplay muted playsinline></video>`;
@@ -211,7 +214,7 @@ async function play(slug){
 $("tabs").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
   currentCat = b.dataset.cat; renderTabs(); renderGrid();
-  $("grid").scrollTop = 0;
+  $("grid").scrollTop = 0; side.scrollTop = 0;
   // 탭(지상파·뉴스·스포츠…)을 누르면 그 탭의 첫 채널이 바로 재생 (뉴스 = YTN)
   const first = CHANNELS.find(c => currentCat==="전체" ? true : currentCat==="즐겨찾기" ? favs.includes(c.slug) : c.cat===currentCat);
   if (first) { try { history.replaceState(null, "", "#" + first.slug); } catch(err) {} play(first.slug); }
