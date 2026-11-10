@@ -202,9 +202,8 @@ function renderTabs(){
   document.body.classList.toggle("ottmode", currentCat === "OTT");
   const cats = ["전체", "즐겨찾기", ...new Set(CHANNELS.map(c => c.cat))].filter(c => !HIDE_CATS.includes(c));
   const btn = (cat, label) => `<button class="${cat===currentCat?'on':''}" data-cat="${esc(cat)}">${esc(label)}</button>`;
-  $("tabs").innerHTML = cats.map(c => btn(c, c)).join("")
+  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? btn("OTT", "OTT") : "")).join("")   // OTT는 지상파 오른쪽
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("")
-    + btn("OTT", "OTT")
     + (CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "");
 }
 function showOtt(){
