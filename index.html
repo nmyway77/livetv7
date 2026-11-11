@@ -44,6 +44,7 @@
   .tap .ttl { font-size:17px; font-weight:800; }
   .tap .btn { background:var(--accent); padding:10px 20px; border-radius:999px; font-size:14px; font-weight:800; box-shadow:0 0 0 0 rgba(229,56,79,.6); animation:ring 1.6s infinite; }
   .tap .sub { font-size:11.5px; color:#aab2c8; }
+  .tap.start .arw { animation:none; font-size:40px; }
   @keyframes bob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(9px); } }
   @keyframes ring { 0% { box-shadow:0 0 0 0 rgba(229,56,79,.6); } 70% { box-shadow:0 0 0 14px rgba(229,56,79,0); } 100% { box-shadow:0 0 0 0 rgba(229,56,79,0); } }
 
@@ -320,12 +321,31 @@ side.addEventListener("click", e => {
 });
 window.addEventListener("hashchange", () => { const s = location.hash.slice(1); if (s && s !== curSlug) play(s); });
 
+
+// 처음 열었을 때의 정지 화면: 채널을 고르거나 ▶를 누르기 전에는 아무것도 재생하지 않음
+function showStart(slug){
+  const c = CHANNELS.find(x => x.slug === slug); if (!c) return;
+  curSlug = "";
+  $("now").innerHTML = `▶ 채널을 선택하세요<small>${esc(c.cat)}</small>`;
+  $("player").innerHTML = `<a class="tap start" href="#${esc(c.slug)}" data-start="${esc(c.slug)}">
+    <div class="arw">▶</div>
+    <div class="ttl">${esc(c.name)} 실시간</div>
+    <div class="btn">▶ 눌러서 보기</div>
+    <div class="sub">오른쪽 목록에서 다른 채널을 골라도 바로 재생돼요</div></a>`;
+}
+$("player").addEventListener("click", e => {
+  const a = e.target.closest("a.start"); if (!a) return;
+  e.preventDefault();
+  try { history.replaceState(null, "", "#" + a.dataset.start); } catch(err) {}
+  play(a.dataset.start);
+});
+
 renderTabs(); renderGrid();
 /* 핸드폰: 화살표(KBS·MBC 등)를 누르면 새 탭 대신 같은 창(최상위)에서 열기 → 백버튼으로 myway.kr 복귀.
    돌아오면 나갔던 채널을 다시 보여 줌 (그 탭 세션에서 1회만) */
 const RET_KEY = "liveTvReturnV1";
 $("player").addEventListener("click", e => {
-  const a = e.target.closest("a.tap"); if (!a || !IS_MOBILE) return;
+  const a = e.target.closest("a.tap:not(.start)"); if (!a || !IS_MOBILE) return;
   e.preventDefault();
   try { sessionStorage.setItem(RET_KEY, JSON.stringify({ slug: curSlug, cat: currentCat, y: side.scrollTop, t: Date.now() })); } catch(err) {}
   try { (window.top || window).location.href = a.href; } catch(err) { window.open(a.href, "_blank", "noopener"); }
@@ -339,7 +359,8 @@ try { const r = JSON.parse(sessionStorage.getItem(RET_KEY) || "null"); sessionSt
         requestAnimationFrame(() => { const t = $("tabs").querySelector("button.on"); if (t) { const tb = $("tabs"); tb.scrollLeft = t.offsetLeft - (tb.clientWidth - t.offsetWidth) / 2; } });   // 탭바에서 그 탭이 보이게
       } } catch(err) {}
 if (currentCat === "OTT") showOtt();
-else play(location.hash ? location.hash.slice(1) : (retSlug || "ytn"));   // 초기화면 = YTN (뉴스 먼저), 백버튼 복귀 시 나갔던 채널
+else if (location.hash || retSlug) play(location.hash ? location.hash.slice(1) : retSlug);   // 주소에 채널이 있거나 백버튼 복귀 → 그 채널 바로 재생
+else showStart("ytn");   // 처음 연 사람: 자동 재생하지 않고 정지 화면(▶ 눌러서 보기) — 누르면 YTN, 다른 채널을 누르면 그 채널이 바로 재생
 </script>
 <script>
 /* 복사 방지 */
