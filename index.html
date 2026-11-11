@@ -472,14 +472,14 @@ async function playWebdrama(i){
     built = true;
     /* 작품은 1화부터 정렬된 목록 → 마지막 회(최신회)로 이동. 채널은 최신 영상이 이미 맨 앞 */
     if (isSeries && !jumped) { jumped = true; started = false; try { wdPlayer.playVideoAt(ids.length - 1); } catch(e) {} arm(); }
-    $("wdCnt").textContent = ids.length + "편" + (isSeries ? " · 1화부터" : " · 최신순");
+    $("wdCnt").textContent = ids.length + "개 · 최신이 위";
     const wrap = $("wdItems"); wrap.innerHTML = "";
     /* 목록은 최신회가 위에 오도록: 작품은 거꾸로, 채널은 그대로 */
     const order = ids.map((id, k) => k); if (isSeries) order.reverse();
     order.forEach(k => {
       const id = ids[k];
       const it = document.createElement("div"); it.className = "wd-it"; it.dataset.i = k;
-      it.innerHTML = `<span class="no">${isSeries ? (k + 1) + "화" : (k + 1)}</span><img loading="lazy" src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt=""><span class="ti">${isSeries ? (k + 1) + "화" : "영상 " + (k + 1)}</span>`;
+      it.innerHTML = `<span class="no">${k + 1}</span><img loading="lazy" src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt=""><span class="ti">영상 ${k + 1}</span>`;
       it.onclick = () => { try { wdPlayer.playVideoAt(k); } catch(e) {} };
       wrap.appendChild(it);
       wdTitle(id, it.querySelector(".ti"));
