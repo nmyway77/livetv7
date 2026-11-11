@@ -108,6 +108,46 @@
     .ott-grid b { font-size:13.5px; }
   }
 
+
+  /* ===== 웹드라마 탭: 카드 목록 → 누르면 최신회 재생 + 오른쪽 회차 목록 ===== */
+  .wd-list { position:absolute; inset:0; overflow-y:auto; background:#fff; padding:22px 18px 40px; -webkit-overflow-scrolling:touch; }
+  .wd-list h2 { max-width:1100px; margin:0 auto 12px; font-size:16px; font-weight:800; letter-spacing:-.3px; }
+  .wd-list h2 small { font-size:12px; color:var(--sub); font-weight:500; margin-left:8px; }
+  .wd-grid { max-width:1100px; margin:0 auto 26px; display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:12px; }
+  .wd-card { position:relative; aspect-ratio:4/3; border-radius:12px; overflow:hidden; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:12px; text-align:center; color:#fff; background:linear-gradient(150deg,var(--c1),var(--c2)); box-shadow:0 2px 8px rgba(0,0,0,.08); transition:transform .18s, box-shadow .18s; }
+  .wd-card:hover { transform:translateY(-3px); box-shadow:0 10px 22px rgba(0,0,0,.14); }
+  .wd-card b { font-size:17px; font-weight:800; line-height:1.25; word-break:keep-all; text-shadow:0 2px 8px rgba(0,0,0,.18); }
+  .wd-card i { font-style:normal; font-size:11.5px; opacity:.92; }
+  .wd-card .tg { position:absolute; left:8px; top:8px; font-size:10.5px; font-weight:800; background:rgba(0,0,0,.25); padding:2px 7px; border-radius:999px; }
+  .wd-play { position:absolute; inset:0; display:flex; flex-direction:column; background:#fff; }
+  .wd-bar { flex:none; display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); }
+  .wd-back { flex:none; border:0; border-radius:999px; padding:7px 14px; font-size:13px; font-weight:800; color:#fff; background:linear-gradient(95deg,#7ed6fb 10%,#b176f3 90%); cursor:pointer; }
+  .wd-ttl { flex:1; min-width:0; font-size:15px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .wd-ttl small { font-size:12px; color:var(--sub); font-weight:500; margin-left:6px; }
+  .wd-body { flex:1; min-height:0; display:flex; }
+  .wd-main { flex:1; min-width:0; display:flex; align-items:center; justify-content:center; background:#000; }
+  .wd-main .wd-v { position:relative; width:100%; max-height:100%; aspect-ratio:16/9; }
+  .wd-main iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+  .wd-side { flex:none; width:330px; display:flex; flex-direction:column; border-left:1px solid var(--line); min-height:0; }
+  .wd-head { flex:none; padding:9px 12px; font-size:13px; font-weight:800; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; }
+  .wd-head span { color:var(--sub); font-weight:600; }
+  .wd-items { flex:1; overflow-y:auto; padding:6px; }
+  .wd-it { display:flex; align-items:center; gap:8px; padding:6px; border-radius:8px; cursor:pointer; }
+  .wd-it:hover { background:#f4f6fb; }
+  .wd-it.cur { background:#fde8eb; }
+  .wd-it .no { flex:none; width:26px; text-align:center; font-size:11.5px; color:var(--sub); font-weight:700; }
+  .wd-it img { flex:none; width:96px; aspect-ratio:16/9; object-fit:cover; border-radius:6px; background:#eee; }
+  .wd-it .ti { flex:1; min-width:0; font-size:12.5px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  @media (max-width: 760px) {
+    body.wide.wdmode .stage.full .player { height:calc(100dvh - var(--tabsH)); }
+    .wd-list { padding:14px 10px 30px; }
+    .wd-grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:9px; }
+    .wd-card b { font-size:15px; }
+    .wd-body { flex-direction:column; }
+    .wd-main { flex:none; }
+    .wd-side { width:auto; flex:1; border-left:0; border-top:1px solid var(--line); }
+  }
+
   * { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
   input, textarea { -webkit-user-select:text; user-select:text; }
 </style>
@@ -174,7 +214,7 @@ toParent({ type:"LIVETV_FAVS_GET" });
 /* 상단 탭: 스포츠·인터넷방송·지역·종교·키즈·라이프·캠 탭은 숨김 (채널은 '전체'에 그대로)
    그 자리에 채널 바로가기 탭 [SOOP] [MLB다시보기] [치지직] → 누르면 그 채널 화면 바로, 맨 뒤 [해외] */
 const HIDE_CATS = ["스포츠", "인터넷방송", "지역", "종교", "키즈", "라이프·캠", "해외"];
-const WIDE_TABS = ["@soop", "@mlb", "@tvgarden", "OTT"];   // 이 탭은 채널 목록 없이 화면 전체 (SOOP·MLB다시보기·TV Garden·OTT)
+const WIDE_TABS = ["@soop", "@mlb", "@tvgarden", "OTT", "웹드라마"];   // 이 탭은 채널 목록 없이 화면 전체 (SOOP·MLB다시보기·TV Garden·OTT)
 const DIRECT_TABS = [["SOOP", "soop"], ["MLB다시보기", "mlb"], ["치지직", "chzzk"], ["트위치", "twitch"], ["TV Garden", "tvgarden"]];
 /* OTT 탭: 누르면 화면에 OTT 바로가기 타일 → 각 타일은 새 창으로 열림 */
 const OTT_LIST = [
@@ -201,9 +241,10 @@ const isExt = c => c.type === "link" && (!!c.newwin || ARROW_SLUGS.includes(c.sl
 function renderTabs(){
   document.body.classList.toggle("wide", WIDE_TABS.includes(currentCat));
   document.body.classList.toggle("ottmode", currentCat === "OTT");
+  document.body.classList.toggle("wdmode", currentCat === "웹드라마");
   const cats = ["전체", "즐겨찾기", ...new Set(CHANNELS.map(c => c.cat))].filter(c => !HIDE_CATS.includes(c));
   const btn = (cat, label) => `<button class="${cat===currentCat?'on':''}" data-cat="${esc(cat)}">${esc(label)}</button>`;
-  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? btn("OTT", "OTT") : "")).join("")   // OTT는 지상파 오른쪽
+  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? btn("OTT", "OTT") : "") + (c === "예능·교양" ? btn("웹드라마", "웹드라마") : "")).join("")   // OTT는 지상파 오른쪽
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("")
     + (CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "");
 }
@@ -242,6 +283,7 @@ function loadHlsJs(){
 }
 
 function stopAll(){
+  if (wdPlayer) { try { wdPlayer.destroy(); } catch(e) {} wdPlayer = null; }
   if (hls) { hls.destroy(); hls = null; }
   const v = $("player").querySelector("video");          // 이전 영상 완전 정지
   if (v) { v.pause(); v.removeAttribute("src"); v.load(); }
@@ -303,6 +345,7 @@ $("tabs").addEventListener("click", e => {
   currentCat = b.dataset.cat; renderTabs(); renderGrid();
   $("grid").scrollTop = 0; side.scrollTop = 0;
   if (currentCat === "OTT") { try { history.replaceState(null, "", location.pathname + location.search); } catch(err) {} showOtt(); return; }
+  if (currentCat === "웹드라마") { try { history.replaceState(null, "", location.pathname + location.search); } catch(err) {} showWebdrama(); return; }
   // 탭(지상파·뉴스…)을 누르면 그 탭의 첫 채널이 바로 재생 (뉴스 = YTN), 바로가기 탭은 그 채널
   const first = dirSlug(currentCat) ? CHANNELS.find(c => c.slug === dirSlug(currentCat)) : CHANNELS.find(inCat);
   if (first) { try { history.replaceState(null, "", "#" + first.slug); } catch(err) {} play(first.slug); }
@@ -341,6 +384,132 @@ $("player").addEventListener("click", e => {
   play(a.dataset.start);
 });
 
+
+/* ===== 웹드라마 탭 =====
+   채널: 그 채널 업로드 목록(최신 영상이 맨 앞) / 작품: 공식 재생목록(1화부터 정렬 → 마지막 회부터 재생)
+   카드를 누르면 최신회가 바로 재생되고, 오른쪽(핸드폰은 아래)에 회차 목록 — 눌러서 이전 회차 보기 */
+const WEBDRAMA = [
+  /* 채널 (최신 업로드순) */
+  { n:"짧은대본", d:"ShortPaper · 공감 연애", list:"UUhgOgRNxrtCcVARDQT_c-Zg", g:"ch" },
+  { n:"치즈필름", d:"CheezeFilm", list:"UUYn09ySlShmzBtYwl1OgOsA", g:"ch" },
+  { n:"픽고", d:"PICKGO", list:"UU2fRmj7qqiuD5VXtBO4hh2A", g:"ch" },
+  { n:"플레이리스트", d:"PLAYLIST Originals", list:"UUid83oPnsL-4ZEo8CyQr6Rg", g:"ch" },
+  { n:"콬TV", d:"와이낫미디어 · KOK TV", list:"UUybPxZoFDPR1qbN04daAc2g", g:"ch" },
+  { n:"낄낄상회", d:"스케치 코미디", list:"UULVwgJVAzHwA-zv88mrAeZw", g:"ch" },
+  { n:"끄적끄적", d:"Writing Down", list:"UUQ1Rn1d6FfB3x2b0n0J6pMQ", g:"ch" },
+  { n:"찐엔딩", d:"Real Ending", list:"UUfela5_jdX8ZKhGGaxyel9g", g:"ch" },
+  { n:"심스틸러", d:"코미디언 웹드라마", list:"UUe9jeTrEpEXYvRrrynEU4Zw", g:"ch" },
+  { n:"석필름", d:"SUKFILM", list:"UU749ed-Qfdk64DyyKpoItEg", g:"ch" },
+  /* 작품 (공식 재생목록) */
+  { n:"연애플레이리스트 1", d:"플레이리스트", list:"PL920OTfqSyzcyEAPWvePd5leialysnmJb", g:"s" },
+  { n:"에이틴", d:"플레이리스트", list:"PL920OTfqSyzd6xANfwFFCUG12yPvBhGZO", g:"s" },
+  { n:"이런 꽃 같은 엔딩", d:"플레이리스트", list:"PL920OTfqSyzdNhjehpA36lS5pkvK4-o85", g:"s" },
+  { n:"최고의 엔딩", d:"플레이리스트", list:"PL920OTfqSyzfQXP3YBYitEkYds0zBuUSZ", g:"s" },
+  { n:"뉴연플리", d:"플레이리스트", list:"PL920OTfqSyzfO2cwSgC2jEj1VUCWC0a3G", g:"s" },
+  { n:"청춘블라썸", d:"플레이리스트", list:"PL920OTfqSyzc6e1Nmugg-uDgkPhj34eVx", g:"s" },
+  { n:"김대표의 엽기적인 부인", d:"플레이리스트", list:"PL920OTfqSyzdGvs4tKKIQDXVDpxP0BLZr", g:"s" },
+  { n:"남장비서", d:"플레이리스트", list:"PL920OTfqSyzfUKNlhIjnUbpJLgKCbdUbD", g:"s" },
+  { n:"비밀 사이", d:"플레이리스트", list:"PL920OTfqSyzeSQPPsT1UR0xplYxU1Aw4s", g:"s" },
+  { n:"이혼하고 나랑 놀래?", d:"플레이리스트", list:"PL920OTfqSyzf60rueGRHlcvWEmz_c67OE", g:"s" },
+  { n:"보건교사, 아는형", d:"플레이리스트", list:"PL920OTfqSyzfTszt55B2Ldtlui3BKj87s", g:"s" },
+  { n:"전지적 짝사랑 시점", d:"콬TV · 시즌1", list:"PLqqQvcAR1H0nwn1x54Ms-u7CQVAbfzu4z", g:"s" },
+  { n:"청담국제고등학교", d:"콬TV", list:"PLqqQvcAR1H0mI87LSuS2rKsL4iqsBNdO0", g:"s" },
+  { n:"청담국제고등학교 2", d:"콬TV", list:"PLqqQvcAR1H0kvCzPLO1VZn0QSUU7_giBx", g:"s" },
+  { n:"키스로 재벌되기", d:"콬TV", list:"PLqqQvcAR1H0n8na6Cxeq5ulQrNlfX_dqc", g:"s" },
+  { n:"의원탐정 기도경", d:"콬TV", list:"PLqqQvcAR1H0m-UOYDHK5p1aLc4lXl_cf7", g:"s" },
+  { n:"보디가드의 비밀계약", d:"콬TV", list:"PLqqQvcAR1H0mpd-HWSqC6EpS5zTyQ6dY4", g:"s" },
+  { n:"로맨스는 데뷔 전에", d:"콬TV", list:"PLqqQvcAR1H0mRRX5Rpag611pavk1hXat4", g:"s" },
+  { n:"연애부록", d:"콬TV", list:"PLqqQvcAR1H0k6rOZKjp92GFMX79zRtkwE", g:"s" }
+];
+const WD_COL = [["#ff9a8b","#ff6a88"],["#7ed6fb","#6f86f5"],["#b6f492","#338b93"],["#ffd36b","#f08a3c"],["#c3a1ff","#7b5cf0"],["#8fd9a8","#2aa198"],["#ff8fd0","#b176f3"],["#9aa6c7","#4b5bd6"]];
+let wdPlayer = null;
+function loadYTApi(){
+  return new Promise(ok => {
+    if (window.YT && YT.Player) return ok();
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function(){ if (prev) try { prev(); } catch(e) {} ok(); };
+    if (!document.getElementById("yt-api")) { const s = document.createElement("script"); s.id = "yt-api"; s.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(s); }
+  });
+}
+function showWebdrama(){
+  stopAll(); curSlug = "";
+  $("stage").classList.add("full");
+  $("now").innerHTML = "";
+  document.title = "웹드라마 - 실시간 TV";
+  const card = (w, i) => { const c = WD_COL[i % WD_COL.length];
+    return `<div class="wd-card" data-wd="${i}" style="--c1:${c[0]};--c2:${c[1]}"><span class="tg">${w.g === "ch" ? "채널" : "작품"}</span><b>${esc(w.n)}</b><i>${esc(w.d)}</i></div>`; };
+  const sec = (g, t, sub) => `<h2>${t}<small>${sub}</small></h2><div class="wd-grid">` + WEBDRAMA.map((w, i) => w.g === g ? card(w, i) : "").join("") + `</div>`;
+  $("player").innerHTML = `<div class="wd-list">` + sec("s", "인기 작품", "누르면 가장 최근 회부터 재생 · 오른쪽에 회차 목록")
+    + sec("ch", "웹드라마 채널", "누르면 그 채널의 최신 영상부터 재생") + `</div>`;
+}
+function wdTitle(id, el){
+  fetch("https://noembed.com/embed?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D" + id)
+    .then(r => r.json()).then(j => { if (j && j.title) el.textContent = j.title; }).catch(() => {});
+}
+async function playWebdrama(i){
+  const w = WEBDRAMA[i]; if (!w) return;
+  stopAll();
+  $("player").innerHTML = `<div class="wd-play">
+    <div class="wd-bar"><button type="button" class="wd-back" id="wdBack">← 웹드라마 목록</button><div class="wd-ttl">${esc(w.n)}<small>${esc(w.d)}</small></div></div>
+    <div class="wd-body"><div class="wd-main"><div class="wd-v"><div id="wdHost"></div></div></div>
+    <aside class="wd-side"><div class="wd-head">회차 목록<span id="wdCnt">불러오는 중…</span></div><div class="wd-items" id="wdItems"></div></aside></div></div>`;
+  $("wdBack").onclick = showWebdrama;
+  document.title = w.n + " - 웹드라마";
+  await loadYTApi();
+  if (!$("wdHost")) return;
+  const isSeries = w.g === "s";
+  let built = false, jumped = false;
+  function highlight(){
+    const wrap = $("wdItems"); if (!wrap || !wdPlayer) return;
+    let idx = -1; try { idx = wdPlayer.getPlaylistIndex(); } catch(e) {}
+    Array.prototype.forEach.call(wrap.children, ch => ch.classList.toggle("cur", +ch.dataset.i === idx));
+    const cur = wrap.querySelector('.wd-it.cur'); if (cur) try { cur.scrollIntoView({ block:"nearest" }); } catch(e) {}
+  }
+  function build(tries){
+    if (built || !wdPlayer) return;
+    let ids = []; try { ids = wdPlayer.getPlaylist() || []; } catch(e) {}
+    if (!ids.length) { if ((tries || 0) < 12) setTimeout(() => build((tries || 0) + 1), 600); return; }
+    built = true;
+    /* 작품은 1화부터 정렬된 목록 → 마지막 회(최신회)로 이동. 채널은 최신 영상이 이미 맨 앞 */
+    if (isSeries && !jumped) { jumped = true; started = false; try { wdPlayer.playVideoAt(ids.length - 1); } catch(e) {} arm(); }
+    $("wdCnt").textContent = ids.length + "편" + (isSeries ? " · 1화부터" : " · 최신순");
+    const wrap = $("wdItems"); wrap.innerHTML = "";
+    /* 목록은 최신회가 위에 오도록: 작품은 거꾸로, 채널은 그대로 */
+    const order = ids.map((id, k) => k); if (isSeries) order.reverse();
+    order.forEach(k => {
+      const id = ids[k];
+      const it = document.createElement("div"); it.className = "wd-it"; it.dataset.i = k;
+      it.innerHTML = `<span class="no">${isSeries ? (k + 1) + "화" : (k + 1)}</span><img loading="lazy" src="https://i.ytimg.com/vi/${id}/mqdefault.jpg" alt=""><span class="ti">${isSeries ? (k + 1) + "화" : "영상 " + (k + 1)}</span>`;
+      it.onclick = () => { try { wdPlayer.playVideoAt(k); } catch(e) {} };
+      wrap.appendChild(it);
+      wdTitle(id, it.querySelector(".ti"));
+    });
+    highlight();
+  }
+  /* 재생 안 되는 회차(다른 사이트 재생 금지·예약 라이브 등)는 건너뜀: 작품은 이전 회로, 채널은 다음 영상으로 */
+  let skips = 0, started = false, watch = null;
+  function skip(){
+    if (!wdPlayer || skips >= 6) return; skips++;
+    let idx = 0, n = 0; try { idx = wdPlayer.getPlaylistIndex(); n = (wdPlayer.getPlaylist() || []).length; } catch(e) {}
+    const next = isSeries ? idx - 1 : idx + 1;
+    if (next >= 0 && next < n) { try { wdPlayer.playVideoAt(next); } catch(e) {} arm(); }
+  }
+  function arm(){ clearTimeout(watch); watch = setTimeout(() => { if (!started) skip(); }, 7000); }
+  wdPlayer = new YT.Player("wdHost", {
+    width: "100%", height: "100%",
+    playerVars: { listType: "playlist", list: w.list, autoplay: 1, mute: 1, playsinline: 1, rel: 0 },
+    events: {
+      onReady: e => { try { e.target.mute(); e.target.playVideo(); } catch(err) {} setTimeout(() => build(0), 400); arm(); },
+      onError: () => skip(),
+      onStateChange: e => {
+        if (e.data === 1 && !started) { started = true; clearTimeout(watch); try { wdPlayer.unMute(); wdPlayer.setVolume(80); } catch(err) {} }
+        if (!built) build(0); highlight();
+      }
+    }
+  });
+}
+$("player").addEventListener("click", e => { const c = e.target.closest(".wd-card"); if (c) playWebdrama(+c.dataset.wd); });
+
 renderTabs(); renderGrid();
 /* 핸드폰: 화살표(KBS·MBC 등)를 누르면 새 탭 대신 같은 창(최상위)에서 열기 → 백버튼으로 myway.kr 복귀.
    돌아오면 나갔던 채널을 다시 보여 줌 (그 탭 세션에서 1회만) */
@@ -360,6 +529,7 @@ try { const r = JSON.parse(sessionStorage.getItem(RET_KEY) || "null"); sessionSt
         requestAnimationFrame(() => { const t = $("tabs").querySelector("button.on"); if (t) { const tb = $("tabs"); tb.scrollLeft = t.offsetLeft - (tb.clientWidth - t.offsetWidth) / 2; } });   // 탭바에서 그 탭이 보이게
       } } catch(err) {}
 if (currentCat === "OTT") showOtt();
+else if (currentCat === "웹드라마") showWebdrama();
 else if (retSlug) play(retSlug);   // 화살표 채널로 나갔다가 백버튼으로 돌아온 경우만 → 그 채널 바로 재생
 else {
   /* 처음 열 때는 항상 정지 화면. 주소 끝에 남은 #채널(새로고침·뒤로가기 때 브라우저가 되살린 값)로는 자동 재생하지 않음 */
