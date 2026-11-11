@@ -359,8 +359,13 @@ try { const r = JSON.parse(sessionStorage.getItem(RET_KEY) || "null"); sessionSt
         requestAnimationFrame(() => { const t = $("tabs").querySelector("button.on"); if (t) { const tb = $("tabs"); tb.scrollLeft = t.offsetLeft - (tb.clientWidth - t.offsetWidth) / 2; } });   // 탭바에서 그 탭이 보이게
       } } catch(err) {}
 if (currentCat === "OTT") showOtt();
-else if (location.hash || retSlug) play(location.hash ? location.hash.slice(1) : retSlug);   // 주소에 채널이 있거나 백버튼 복귀 → 그 채널 바로 재생
-else showStart("ytn");   // 처음 연 사람: 자동 재생하지 않고 정지 화면(▶ 눌러서 보기) — 누르면 YTN, 다른 채널을 누르면 그 채널이 바로 재생
+else if (retSlug) play(retSlug);   // 화살표 채널로 나갔다가 백버튼으로 돌아온 경우만 → 그 채널 바로 재생
+else {
+  /* 처음 열 때는 항상 정지 화면. 주소 끝에 남은 #채널(새로고침·뒤로가기 때 브라우저가 되살린 값)로는 자동 재생하지 않음 */
+  const h = location.hash.slice(1);
+  try { history.replaceState(null, "", location.pathname + location.search); } catch(err) {}
+  showStart(CHANNELS.some(c => c.slug === h) ? h : "ytn");   // ▶ 누르면 그 채널(없으면 YTN), 다른 채널을 누르면 그 채널이 바로 재생
+}   // 처음 연 사람: 자동 재생하지 않고 정지 화면(▶ 눌러서 보기) — 누르면 YTN, 다른 채널을 누르면 그 채널이 바로 재생
 </script>
 <script>
 /* 복사 방지 */
