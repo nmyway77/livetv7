@@ -167,6 +167,20 @@
   .wd-card .tg, .wd-card .mk { z-index:2; }
   body.wdonly { --tabsH:0px; }
   body.wdonly .tabs { display:none; }
+  /* 🔔 새 영상 */
+  .feed-btn { margin-left:10px; vertical-align:middle; border:1.5px solid #b9cdf5; background:#eef4ff; color:#2a4fa8; border-radius:999px; padding:5px 12px; font:inherit; font-size:12.5px; font-weight:800; cursor:pointer; }
+  .feed-btn:hover { background:#dfe9ff; }
+  .fd-head { display:flex; align-items:center; gap:10px; margin:0 0 12px; }
+  .fd-back { border:0; border-radius:999px; padding:7px 14px; font:inherit; font-size:13px; font-weight:800; color:#fff; background:linear-gradient(95deg,#7ed6fb 10%,#b176f3 90%); cursor:pointer; }
+  .fd-top { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:0 0 14px; } .fd-top .lb { font-size:13px; color:#7a8199; margin-right:4px; }
+  .fd-chip { border:1.5px solid #dfe3ec; background:#fff; border-radius:999px; padding:6px 13px; font:inherit; font-size:13px; font-weight:700; color:#4a5170; cursor:pointer; } .fd-chip.on { background:#1f2740; color:#fff; border-color:#1f2740; }
+  .fd-st { font-size:13px; color:#7a8199; margin-left:auto; }
+  .fd-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:14px; }
+  .fd-it { cursor:pointer; border-radius:12px; overflow:hidden; background:#fff; box-shadow:0 2px 10px rgba(20,30,60,.07); transition:transform .18s; } .fd-it:hover { transform:translateY(-3px); }
+  .fd-it img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; background:#eee; }
+  .fd-it .tx { padding:8px 10px 10px; } .fd-it b { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-size:13.5px; line-height:1.35; color:#1f2740; }
+  .fd-it small { display:block; margin-top:5px; font-size:12px; color:#7a8199; } .fd-empty { padding:40px 0; text-align:center; color:#7a8199; }
+  @media (max-width:600px){ .fd-grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:9px; } .fd-it b { font-size:12.5px; } }
 </style>
 </head>
 <body>
@@ -430,6 +444,12 @@ const WEBDRAMA = [
   { n:"심스틸러", d:"코미디언 웹드라마", list:"UULFe9jeTrEpEXYvRrrynEU4Zw", v:"hosfRn7J3J4", g:"ch" },
   { n:"석필름", d:"SUKFILM", list:"UULF749ed-Qfdk64DyyKpoItEg", v:"qYZ8hcNX19s", g:"ch" },
   { n:"디비디방", d:"DVD room · 스케치 코미디", list:"UULFS5BOISYzyZJdRftDwubXug", v:"ZA7uuSa3P94", g:"ch" },
+  { n:"그냥 필름", d:"Just Film · 웹드라마", list:"UULFpWIbvmP7MbxZhQ5XOMrg1g", v:"Wo0Ns9zHhyE", g:"ch" },
+  { n:"팡팡 스튜디오", d:"PANGPANG STUDIO", list:"UULFJ-ofC67CjMxBRmRIb6s9-w", v:"GDBJ_-1-680", g:"ch" },
+  { n:"너덜트", d:"NERDULT · 현실 공감 단편", list:"UULFXEKwWflysXu312NmIP_dlw", v:"YTHqWXMVpzI", g:"ch" },
+  { n:"스튜디오에그", d:"STUDIO EGG · 웹드라마", list:"UULFqppvtzI0jIlGgJ-Cc1qitg", v:"GfxRhMXpBYs", g:"ch" },
+  { n:"Team135", d:"웹드라마", list:"UULFT5XMUy19i1aUTuKk9PDzMQ", v:"ODQA7_SbKt4", g:"ch" },
+  { n:"팀코피", d:"로맨스 웹드라마", list:"UULFaYAYPZQKEPVQoMGQeOTeqA", v:"ljGaltRuzeY", g:"ch" },
   /* 작품 (공식 재생목록) */
   { n:"연애플레이리스트 1", d:"플레이리스트", list:"PL920OTfqSyzcyEAPWvePd5leialysnmJb", v:"3rj7xM3Vmc4", g:"s" },
   { n:"에이틴", d:"플레이리스트", list:"PL920OTfqSyzd6xANfwFFCUG12yPvBhGZO", v:"nca7i5oX09o", g:"s" },
@@ -465,7 +485,7 @@ function showWebdrama(){
   const card = (w, i) => { const c = WD_COL[i % WD_COL.length];
     return `<div class="wd-card${w.v ? " has-th" : ""}" data-wd="${i}" style="--c1:${c[0]};--c2:${c[1]}">${w.v ? `<img class="th" src="https://i.ytimg.com/vi/${w.v}/hqdefault.jpg" alt="" loading="lazy" onerror="this.parentNode.classList.remove('has-th');this.remove()">` : ""}<span class="tg">${w.g === "ch" ? "채널" : "작품"}</span>${(wdMarks[w.list] || wdMarks['UU' + w.list.slice(4)]) ? '<span class="mk">📌 이어보기</span>' : ''}<b>${esc(w.n)}</b><i>${esc(w.d)}</i></div>`; };
   const sec = (g, t, sub) => `<h2>${t}<small>${sub}</small></h2><div class="wd-grid">` + WEBDRAMA.map((w, i) => w.g === g ? card(w, i) : "").join("") + `</div>`;
-  $("player").innerHTML = `<div class="wd-list">` + sec("s", "인기 작품", "누르면 가장 최근 회부터 재생 · 오른쪽에 회차 목록")
+  $("player").innerHTML = `<div class="wd-list"><h2 style="margin-bottom:16px">웹드라마<button type="button" class="feed-btn" id="wdFeedBtn">🔔 새 영상 확인</button></h2>` + sec("s", "인기 작품", "누르면 가장 최근 회부터 재생 · 오른쪽에 회차 목록")
     + sec("ch", "웹드라마 채널", "누르면 그 채널의 최신 영상부터 재생") + `</div>`;
 }
 function wdTitle(id, el){
@@ -573,7 +593,106 @@ async function playWebdrama(i){
     }
   });
 }
-$("player").addEventListener("click", e => { const c = e.target.closest(".wd-card"); if (c) playWebdrama(+c.dataset.wd); });
+$("player").addEventListener("click", e => { if (e.target.closest("#wdFeedBtn")) { showWdFeed(); return; } const c = e.target.closest(".wd-card"); if (c) playWebdrama(+c.dataset.wd); });
+/* ===== 🔔 새 영상: 누를 때만 각 채널의 최근 영상(유튜브 RSS, rss2json 경유)을 모아 날짜순으로 — 쇼츠 제외 ===== */
+function makeFeed(opt){
+  /* opt: { box, sources:[{q:'channel_id=UC..'|'playlist_id=PL..', name}], onPick(list, k) } */
+  let FEED = null, days = 3, loading = false;
+  const ta = document.createElement("textarea"); const unesc = s => { ta.innerHTML = String(s); return ta.value; };
+  const ago = d => { const m = Math.floor((Date.now() - d) / 60000); if (m < 60) return Math.max(1, m) + "분 전"; const h = Math.floor(m / 60); if (h < 24) return h + "시간 전"; return Math.floor(h / 24) + "일 전"; };
+  function render(st){
+    const box = opt.box; const D = [[1, "24시간"], [3, "3일"], [7, "7일"]];
+    const list = (FEED || []).filter(x => Date.now() - x.d <= days * 86400000);
+    box.innerHTML = `<div class="fd-top"><span class="lb">올라온 지</span>` + D.map(d => `<button type="button" class="fd-chip${d[0] === days ? " on" : ""}" data-d="${d[0]}">${d[1]}</button>`).join("")
+      + `<button type="button" class="fd-chip fd-re">↻ 다시 불러오기</button><span class="fd-st">${st || (list.length + "개 · 쇼츠 제외")}</span></div><div class="fd-grid"></div>`;
+    box.querySelectorAll(".fd-chip[data-d]").forEach(b => b.onclick = () => { days = +b.dataset.d; render(); });
+    box.querySelector(".fd-re").onclick = () => { FEED = null; load(); };
+    const g = box.querySelector(".fd-grid");
+    if (FEED && !list.length) { g.outerHTML = `<div class="fd-empty">이 기간에 올라온 새 영상이 없어요</div>`; return; }
+    list.forEach((x, k) => {
+      const it = document.createElement("div"); it.className = "fd-it";
+      it.innerHTML = `<img loading="lazy" alt="" src="https://i.ytimg.com/vi/${x.v}/mqdefault.jpg"><div class="tx"><b></b><small></small></div>`;
+      it.querySelector("b").textContent = x.t; it.querySelector("small").textContent = x.ch + " · " + ago(x.d);
+      it.onclick = () => opt.onPick(list, k); g.appendChild(it);
+    });
+  }
+  function one(s, tries){
+    return fetch("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.youtube.com/feeds/videos.xml?" + s.q))
+      .then(r => r.json()).then(j => {
+        if (j.status !== "ok") { if ((tries || 0) < 3) return new Promise(ok => setTimeout(ok, 2500 * ((tries || 0) + 1))).then(() => one(s, (tries || 0) + 1)); return []; }
+        return (j.items || []).filter(i => !/\/shorts\//.test(i.link || "")).map(i => {
+          const m = String(i.link || "").match(/[?&]v=([\w-]{11})/); const d = Date.parse(String(i.pubDate || "").replace(" ", "T") + "Z");
+          return (m && !isNaN(d)) ? { v: m[1], t: unesc(i.title || ""), ch: s.name, d } : null; }).filter(Boolean);
+      }).catch(() => []);
+  }
+  function load(){
+    if (FEED) { render(); return; }
+    if (loading) return; loading = true;
+    const srcs = opt.sources; let k = 0, done = 0; const out = [], seen = {};
+    render("불러오는 중… 0/" + srcs.length);
+    const worker = () => { if (k >= srcs.length) return Promise.resolve(); const s = srcs[k++];
+      return one(s).then(a => { a.forEach(x => { if (!seen[x.v]) { seen[x.v] = 1; out.push(x); } }); done++; const st = opt.box.querySelector(".fd-st"); if (st && !FEED) st.textContent = "불러오는 중… " + done + "/" + srcs.length; return worker(); }); };
+    Promise.all([worker(), worker(), worker(), worker()]).then(() => { out.sort((a, b) => b.d - a.d); FEED = out; loading = false; render(); });
+  }
+  return { load };
+}
+
+/* 웹드라마 새 영상: 채널(쇼츠 제외 목록의 채널) + 작품 재생목록의 최근 영상 */
+const wdFeed = makeFeed({
+  get box(){ return $("wdFeedBox"); },
+  sources: WEBDRAMA.map(w => ({ q: w.list.startsWith("UULF") ? "channel_id=UC" + w.list.slice(4) : "playlist_id=" + w.list, name: w.n })),
+  onPick: (list, k) => playWdIds(list, k)
+});
+function showWdFeed(){
+  stopAll();
+  $("player").innerHTML = `<div class="wd-list"><div class="fd-head"><button type="button" class="fd-back" id="wdFdBack">← 웹드라마 목록</button><h2 style="margin:0">🔔 웹드라마 새 영상</h2></div><div id="wdFeedBox"></div></div>`;
+  $("wdFdBack").onclick = showWebdrama;
+  document.title = "웹드라마 새 영상 - 실시간 TV";
+  wdFeed.load();
+}
+/* 새 영상 여러 개를 이어서 재생 — 3분 이하(쇼츠·예고·짧은 클립)는 건너뛰고 목록에서 뺌 */
+async function playWdIds(vids, start){
+  const allShort = new Set([].concat.apply([], Object.values(WD_SHORTS)));
+  const picked = vids[start]; vids = vids.filter(x => x === picked || !allShort.has(x.v)); start = Math.max(0, vids.indexOf(picked));
+  stopAll();
+  $("player").innerHTML = `<div class="wd-play">
+    <div class="wd-bar"><button type="button" class="wd-back" id="wdBack">← 새 영상 목록</button><div class="wd-ttl">🔔 웹드라마 새 영상</div></div>
+    <div class="wd-body"><div class="wd-main"><div class="wd-v"><div id="wdHost"></div></div></div>
+    <aside class="wd-side"><div class="wd-head">새 영상<span id="wdCnt">${vids.length}개 · 최신이 위</span></div><div class="wd-items" id="wdItems"></div></aside></div></div>`;
+  $("wdBack").onclick = showWdFeed;
+  const wrap = $("wdItems");
+  vids.forEach((x, k) => {
+    const it = document.createElement("div"); it.className = "wd-it"; it.dataset.i = k; it.dataset.v = x.v;
+    it.innerHTML = `<span class="no">${k + 1}</span><img loading="lazy" src="https://i.ytimg.com/vi/${x.v}/mqdefault.jpg" alt=""><span class="ti"></span>`;
+    it.querySelector(".ti").textContent = x.ch + " · " + x.t;
+    it.onclick = () => { try { wdPlayer.playVideoAt(k); } catch(e) {} };
+    wrap.appendChild(it);
+  });
+  await loadYTApi();
+  if (!$("wdHost")) return;
+  let started = false, skipN = 0;
+  const highlight = () => { let idx = -1; try { idx = wdPlayer.getPlaylistIndex(); } catch(e) {}
+    Array.prototype.forEach.call(wrap.children, ch => ch.classList.toggle("cur", +ch.dataset.i === idx));
+    const cur = wrap.querySelector(".wd-it.cur"); if (cur) try { cur.scrollIntoView({ block:"nearest" }); } catch(e) {} };
+  const next = () => { try { const i = wdPlayer.getPlaylistIndex(); if (i + 1 < vids.length) wdPlayer.playVideoAt(i + 1); } catch(e) {} };
+  wdPlayer = new YT.Player("wdHost", {
+    width: "100%", height: "100%",
+    playerVars: { autoplay: 1, mute: 1, playsinline: 1, rel: 0 },
+    events: {
+      onReady: e => { try { e.target.mute(); e.target.loadPlaylist(vids.map(x => x.v), start || 0); } catch(err) {} },
+      onError: () => next(),
+      onStateChange: e => {
+        if (e.data === 1) {
+          let d = 0, id = ""; try { d = wdPlayer.getDuration(); id = (wdPlayer.getVideoData() || {}).video_id || ""; } catch(err) {}
+          if (d > 0 && d <= 180 && skipN < 40) { skipN++; const r = wrap.querySelector('.wd-it[data-v="' + id + '"]'); if (r) r.remove(); next(); return; }
+          if (!started) { started = true; try { wdPlayer.unMute(); wdPlayer.setVolume(80); } catch(err) {} }
+        }
+        highlight();
+      }
+    }
+  });
+}
+
 
 renderTabs(); renderGrid();
 /* 핸드폰: 화살표(KBS·MBC 등)를 누르면 새 탭 대신 같은 창(최상위)에서 열기 → 백버튼으로 myway.kr 복귀.
