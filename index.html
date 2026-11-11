@@ -158,6 +158,14 @@
   * { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
   input, textarea { -webkit-user-select:text; user-select:text; }
   /* 웹드라마 전용 화면(?wd=1): 채널 탭·목록 없이 화면 전체 */
+  /* 웹드라마 카드: 유튜브 썸네일 사진 + 아래쪽에 제목 */
+  .wd-card .th { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+  .wd-card.has-th { justify-content:flex-end; align-items:flex-start; text-align:left; padding:10px 11px; aspect-ratio:16/10; }
+  .wd-card.has-th::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,.78) 100%); z-index:1; }
+  .wd-card.has-th b, .wd-card.has-th i { position:relative; z-index:2; }
+  .wd-card .tg, .wd-card .mk { z-index:2; }
+  .wd-card.has-th b { font-size:15px; }
+  .wd-card.has-th:hover .th { transform:scale(1.04); } .wd-card .th { transition:transform .3s; }
   body.wdonly { --tabsH:0px; }
   body.wdonly .tabs { display:none; }
 </style>
@@ -412,37 +420,37 @@ $("player").addEventListener("click", e => {
    카드를 누르면 최신회가 바로 재생되고, 오른쪽(핸드폰은 아래)에 회차 목록 — 눌러서 이전 회차 보기 */
 const WEBDRAMA = [
   /* 채널 (최신 업로드순) */
-  { n:"짧은대본", d:"ShortPaper · 공감 연애", list:"UUhgOgRNxrtCcVARDQT_c-Zg", g:"ch" },
-  { n:"치즈필름", d:"CheezeFilm", list:"UUYn09ySlShmzBtYwl1OgOsA", g:"ch" },
-  { n:"픽고", d:"PICKGO", list:"UU2fRmj7qqiuD5VXtBO4hh2A", g:"ch" },
-  { n:"플레이리스트", d:"PLAYLIST Originals", list:"UUid83oPnsL-4ZEo8CyQr6Rg", g:"ch" },
-  { n:"콬TV", d:"와이낫미디어 · KOK TV", list:"UUybPxZoFDPR1qbN04daAc2g", g:"ch" },
-  { n:"낄낄상회", d:"스케치 코미디", list:"UULVwgJVAzHwA-zv88mrAeZw", g:"ch" },
-  { n:"끄적끄적", d:"Writing Down", list:"UUQ1Rn1d6FfB3x2b0n0J6pMQ", g:"ch" },
-  { n:"찐엔딩", d:"Real Ending", list:"UUfela5_jdX8ZKhGGaxyel9g", g:"ch" },
-  { n:"심스틸러", d:"코미디언 웹드라마", list:"UUe9jeTrEpEXYvRrrynEU4Zw", g:"ch" },
-  { n:"석필름", d:"SUKFILM", list:"UU749ed-Qfdk64DyyKpoItEg", g:"ch" },
-  { n:"디비디방", d:"DVD room · 스케치 코미디", list:"UUS5BOISYzyZJdRftDwubXug", g:"ch" },
+  { n:"짧은대본", d:"ShortPaper · 공감 연애", list:"UUhgOgRNxrtCcVARDQT_c-Zg", v:"__CIlV8MbBs", g:"ch" },
+  { n:"치즈필름", d:"CheezeFilm", list:"UUYn09ySlShmzBtYwl1OgOsA", v:"-ihjY0mZlG8", g:"ch" },
+  { n:"픽고", d:"PICKGO", list:"UU2fRmj7qqiuD5VXtBO4hh2A", v:"tse-WXh_Zno", g:"ch" },
+  { n:"플레이리스트", d:"PLAYLIST Originals", list:"UUid83oPnsL-4ZEo8CyQr6Rg", v:"hGsdXg8H0-c", g:"ch" },
+  { n:"콬TV", d:"와이낫미디어 · KOK TV", list:"UUybPxZoFDPR1qbN04daAc2g", v:"Gw2evCjPhds", g:"ch" },
+  { n:"낄낄상회", d:"스케치 코미디", list:"UULVwgJVAzHwA-zv88mrAeZw", v:"scQLTQf_Ubo", g:"ch" },
+  { n:"끄적끄적", d:"Writing Down", list:"UUQ1Rn1d6FfB3x2b0n0J6pMQ", v:"W-prwexGwxs", g:"ch" },
+  { n:"찐엔딩", d:"Real Ending", list:"UUfela5_jdX8ZKhGGaxyel9g", v:"HVHZxv0SkWE", g:"ch" },
+  { n:"심스틸러", d:"코미디언 웹드라마", list:"UUe9jeTrEpEXYvRrrynEU4Zw", v:"hosfRn7J3J4", g:"ch" },
+  { n:"석필름", d:"SUKFILM", list:"UU749ed-Qfdk64DyyKpoItEg", v:"qYZ8hcNX19s", g:"ch" },
+  { n:"디비디방", d:"DVD room · 스케치 코미디", list:"UUS5BOISYzyZJdRftDwubXug", v:"ZA7uuSa3P94", g:"ch" },
   /* 작품 (공식 재생목록) */
-  { n:"연애플레이리스트 1", d:"플레이리스트", list:"PL920OTfqSyzcyEAPWvePd5leialysnmJb", g:"s" },
-  { n:"에이틴", d:"플레이리스트", list:"PL920OTfqSyzd6xANfwFFCUG12yPvBhGZO", g:"s" },
-  { n:"이런 꽃 같은 엔딩", d:"플레이리스트", list:"PL920OTfqSyzdNhjehpA36lS5pkvK4-o85", g:"s" },
-  { n:"최고의 엔딩", d:"플레이리스트", list:"PL920OTfqSyzfQXP3YBYitEkYds0zBuUSZ", g:"s" },
-  { n:"뉴연플리", d:"플레이리스트", list:"PL920OTfqSyzfO2cwSgC2jEj1VUCWC0a3G", g:"s" },
-  { n:"청춘블라썸", d:"플레이리스트", list:"PL920OTfqSyzc6e1Nmugg-uDgkPhj34eVx", g:"s" },
-  { n:"김대표의 엽기적인 부인", d:"플레이리스트", list:"PL920OTfqSyzdGvs4tKKIQDXVDpxP0BLZr", g:"s" },
-  { n:"남장비서", d:"플레이리스트", list:"PL920OTfqSyzfUKNlhIjnUbpJLgKCbdUbD", g:"s" },
-  { n:"비밀 사이", d:"플레이리스트", list:"PL920OTfqSyzeSQPPsT1UR0xplYxU1Aw4s", g:"s" },
-  { n:"이혼하고 나랑 놀래?", d:"플레이리스트", list:"PL920OTfqSyzf60rueGRHlcvWEmz_c67OE", g:"s" },
-  { n:"보건교사, 아는형", d:"플레이리스트", list:"PL920OTfqSyzfTszt55B2Ldtlui3BKj87s", g:"s" },
-  { n:"전지적 짝사랑 시점", d:"콬TV · 시즌1", list:"PLqqQvcAR1H0nwn1x54Ms-u7CQVAbfzu4z", g:"s" },
-  { n:"청담국제고등학교", d:"콬TV", list:"PLqqQvcAR1H0mI87LSuS2rKsL4iqsBNdO0", g:"s" },
-  { n:"청담국제고등학교 2", d:"콬TV", list:"PLqqQvcAR1H0kvCzPLO1VZn0QSUU7_giBx", g:"s" },
-  { n:"키스로 재벌되기", d:"콬TV", list:"PLqqQvcAR1H0n8na6Cxeq5ulQrNlfX_dqc", g:"s" },
-  { n:"의원탐정 기도경", d:"콬TV", list:"PLqqQvcAR1H0m-UOYDHK5p1aLc4lXl_cf7", g:"s" },
-  { n:"보디가드의 비밀계약", d:"콬TV", list:"PLqqQvcAR1H0mpd-HWSqC6EpS5zTyQ6dY4", g:"s" },
-  { n:"로맨스는 데뷔 전에", d:"콬TV", list:"PLqqQvcAR1H0mRRX5Rpag611pavk1hXat4", g:"s" },
-  { n:"연애부록", d:"콬TV", list:"PLqqQvcAR1H0k6rOZKjp92GFMX79zRtkwE", g:"s" }
+  { n:"연애플레이리스트 1", d:"플레이리스트", list:"PL920OTfqSyzcyEAPWvePd5leialysnmJb", v:"3rj7xM3Vmc4", g:"s" },
+  { n:"에이틴", d:"플레이리스트", list:"PL920OTfqSyzd6xANfwFFCUG12yPvBhGZO", v:"nca7i5oX09o", g:"s" },
+  { n:"이런 꽃 같은 엔딩", d:"플레이리스트", list:"PL920OTfqSyzdNhjehpA36lS5pkvK4-o85", v:"raoqGEn4e0s", g:"s" },
+  { n:"최고의 엔딩", d:"플레이리스트", list:"PL920OTfqSyzfQXP3YBYitEkYds0zBuUSZ", v:"f9gSYqVPvKE", g:"s" },
+  { n:"뉴연플리", d:"플레이리스트", list:"PL920OTfqSyzfO2cwSgC2jEj1VUCWC0a3G", v:"zcgWEsTeLFo", g:"s" },
+  { n:"청춘블라썸", d:"플레이리스트", list:"PL920OTfqSyzc6e1Nmugg-uDgkPhj34eVx", v:"MtRndTBDplU", g:"s" },
+  { n:"김대표의 엽기적인 부인", d:"플레이리스트", list:"PL920OTfqSyzdGvs4tKKIQDXVDpxP0BLZr", v:"hGsdXg8H0-c", g:"s" },
+  { n:"남장비서", d:"플레이리스트", list:"PL920OTfqSyzfUKNlhIjnUbpJLgKCbdUbD", v:"_DNra_H8vHw", g:"s" },
+  { n:"비밀 사이", d:"플레이리스트", list:"PL920OTfqSyzeSQPPsT1UR0xplYxU1Aw4s", v:"LlskeeAapP8", g:"s" },
+  { n:"이혼하고 나랑 놀래?", d:"플레이리스트", list:"PL920OTfqSyzf60rueGRHlcvWEmz_c67OE", v:"z09UAiQrb0w", g:"s" },
+  { n:"보건교사, 아는형", d:"플레이리스트", list:"PL920OTfqSyzfTszt55B2Ldtlui3BKj87s", v:"dA0fcVlcxkY", g:"s" },
+  { n:"전지적 짝사랑 시점", d:"콬TV · 시즌1", list:"PLqqQvcAR1H0nwn1x54Ms-u7CQVAbfzu4z", v:"PrFFidFAb5s", g:"s" },
+  { n:"청담국제고등학교", d:"콬TV", list:"PLqqQvcAR1H0mI87LSuS2rKsL4iqsBNdO0", v:"PmUVS5LY9zo", g:"s" },
+  { n:"청담국제고등학교 2", d:"콬TV", list:"PLqqQvcAR1H0kvCzPLO1VZn0QSUU7_giBx", v:"SEf8bNM6vPE", g:"s" },
+  { n:"키스로 재벌되기", d:"콬TV", list:"PLqqQvcAR1H0n8na6Cxeq5ulQrNlfX_dqc", v:"NymzIAa6lPg", g:"s" },
+  { n:"의원탐정 기도경", d:"콬TV", list:"PLqqQvcAR1H0m-UOYDHK5p1aLc4lXl_cf7", v:"zcBB3RnFfnA", g:"s" },
+  { n:"보디가드의 비밀계약", d:"콬TV", list:"PLqqQvcAR1H0mpd-HWSqC6EpS5zTyQ6dY4", v:"Dflk2kfrnxY", g:"s" },
+  { n:"로맨스는 데뷔 전에", d:"콬TV", list:"PLqqQvcAR1H0mRRX5Rpag611pavk1hXat4", v:"yVcScyk6q8k", g:"s" },
+  { n:"연애부록", d:"콬TV", list:"PLqqQvcAR1H0k6rOZKjp92GFMX79zRtkwE", v:"AuI8J2yLdwE", g:"s" }
 ];
 const WD_COL = [["#ff9a8b","#ff6a88"],["#7ed6fb","#6f86f5"],["#b6f492","#338b93"],["#ffd36b","#f08a3c"],["#c3a1ff","#7b5cf0"],["#8fd9a8","#2aa198"],["#ff8fd0","#b176f3"],["#9aa6c7","#4b5bd6"]];
 let wdPlayer = null;
@@ -460,7 +468,7 @@ function showWebdrama(){
   $("now").innerHTML = "";
   document.title = "웹드라마 - 실시간 TV";
   const card = (w, i) => { const c = WD_COL[i % WD_COL.length];
-    return `<div class="wd-card" data-wd="${i}" style="--c1:${c[0]};--c2:${c[1]}"><span class="tg">${w.g === "ch" ? "채널" : "작품"}</span>${wdMarks[w.list] ? '<span class="mk">📌 이어보기</span>' : ''}<b>${esc(w.n)}</b><i>${esc(w.d)}</i></div>`; };
+    return `<div class="wd-card${w.v ? " has-th" : ""}" data-wd="${i}" style="--c1:${c[0]};--c2:${c[1]}">${w.v ? `<img class="th" src="https://i.ytimg.com/vi/${w.v}/hqdefault.jpg" alt="" loading="lazy" onerror="this.parentNode.classList.remove('has-th');this.remove()">` : ""}<span class="tg">${w.g === "ch" ? "채널" : "작품"}</span>${wdMarks[w.list] ? '<span class="mk">📌 이어보기</span>' : ''}<b>${esc(w.n)}</b><i>${esc(w.d)}</i></div>`; };
   const sec = (g, t, sub) => `<h2>${t}<small>${sub}</small></h2><div class="wd-grid">` + WEBDRAMA.map((w, i) => w.g === g ? card(w, i) : "").join("") + `</div>`;
   $("player").innerHTML = `<div class="wd-list">` + sec("s", "인기 작품", "누르면 가장 최근 회부터 재생 · 오른쪽에 회차 목록")
     + sec("ch", "웹드라마 채널", "누르면 그 채널의 최신 영상부터 재생") + `</div>`;
