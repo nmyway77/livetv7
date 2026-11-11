@@ -491,7 +491,8 @@ async function playWebdrama(i){
   function skip(){
     if (!wdPlayer || skips >= 6) return; skips++;
     let idx = 0, n = 0; try { idx = wdPlayer.getPlaylistIndex(); n = (wdPlayer.getPlaylist() || []).length; } catch(e) {}
-    const next = isSeries ? idx - 1 : idx + 1;
+    /* 처음 최신회를 찾을 때만 뒤로(이전 회), 보는 중에 막힌 회차를 만나면 앞으로(다음 회) */
+    const next = (isSeries && !started) ? idx - 1 : idx + 1;
     if (next >= 0 && next < n) { try { wdPlayer.playVideoAt(next); } catch(e) {} arm(); }
   }
   function arm(){ clearTimeout(watch); watch = setTimeout(() => { if (!started) skip(); }, 7000); }
