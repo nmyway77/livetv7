@@ -484,7 +484,24 @@ function loadYTApi(){
     if (!document.getElementById("yt-api")) { const s = document.createElement("script"); s.id = "yt-api"; s.src = "https://www.youtube.com/iframe_api"; document.head.appendChild(s); }
   });
 }
+/* ===== 뒤로가기 지원: 재생·새 영상 화면을 열면 기록을 하나 남겨서, 핸드폰 뒤로가기(백버튼)로 이전 화면에 돌아오게 ===== */
+var HIST = [], HIST_POP = false;   /* [{ back, live, pushed, tag }] */
+function histOpen(back, isOpen, tag){
+  if (tag) for (var i = 0; i < HIST.length; i++) if (HIST[i].tag === tag && HIST[i].live) return HIST[i];
+  var h = { back: back, live: true, tag: tag || "" }; HIST.push(h);
+  /* 유튜브 창이 자리 잡은 뒤에 기록을 남김 (그래야 뒤로가기 한 번에 돌아옴) */
+  setTimeout(function(){ if (!h.live || (isOpen && !isOpen())) { var j = HIST.indexOf(h); if (j >= 0) HIST.splice(j, 1); return; } try { history.pushState({ myway: HIST.length }, ""); h.pushed = true; } catch(e) {} }, 900);
+  return h;
+}
+function histClosed(){ if (HIST_POP) return; var h = HIST[HIST.length - 1]; if (h) h.live = false; }   /* 화면 안 버튼으로 닫음 → 그 기록은 지난 것 */
+window.addEventListener("popstate", function(){
+  for (var i = HIST.length - 1; i >= 0; i--) { var h = HIST[i]; if (!h.pushed) continue; HIST.splice(i, 1);
+    if (h.live) { h.live = false; HIST_POP = true; try { h.back(); } catch(e) {} HIST_POP = false; } return; }
+});
+function histCloseTag(tag){ if (HIST_POP) return; var h = HIST[HIST.length - 1]; if (h && h.tag === tag) h.live = false; }
+function histCloseAll(){ if (HIST_POP) return; HIST.forEach(function(h){ h.live = false; }); }
 function showWebdrama(){
+  histCloseAll();
   stopAll(); curSlug = "";
   $("stage").classList.add("full");
   $("now").innerHTML = "";
@@ -502,6 +519,7 @@ function wdTitle(id, el){
 async function playWebdrama(i){
   const w = WEBDRAMA[i]; if (!w) return;
   stopAll();
+  histOpen(showWebdrama, () => !!document.querySelector(".wd-play"), "play");
   $("player").innerHTML = `<div class="wd-play">
     <div class="wd-bar"><button type="button" class="wd-back" id="wdBack">← 웹드라마 목록</button><div class="wd-ttl">${esc(w.n)}<small>${esc(w.d)}</small></div><span class="wd-resume" id="wdResume"></span><button type="button" class="big-btn wd-big">⛶ 크게</button><button type="button" class="wd-mark" id="wdMark" title="지금 보는 회차와 시간을 기억해 두고, 다음에 이 작품을 열면 여기부터 재생">📌 여기까지 봄</button></div>
     <div class="wd-body"><div class="wd-main bigable"><div class="wd-v"><div id="wdHost"></div></div></div>
@@ -622,7 +640,7 @@ function makeFeed(opt){
   const ta = document.createElement("textarea"); const unesc = s => { ta.innerHTML = String(s); return ta.value; };
   const ago = d => { const m = Math.floor((Date.now() - d) / 60000); if (m < 60) return Math.max(1, m) + "분 전"; const h = Math.floor(m / 60); if (h < 24) return h + "시간 전"; return Math.floor(h / 24) + "일 전"; };
   function render(st){
-    const box = opt.box; const D = [[1, "24시간"], [3, "3일"], [7, "7일"]];
+    const box = opt.box; if (!box) return; const D = [[1, "24시간"], [3, "3일"], [7, "7일"]];
     const list = (FEED || []).filter(x => Date.now() - x.d <= days * 86400000);
     box.innerHTML = `<div class="fd-top"><span class="lb">올라온 지</span>` + D.map(d => `<button type="button" class="fd-chip${d[0] === days ? " on" : ""}" data-d="${d[0]}">${d[1]}</button>`).join("")
       + `<button type="button" class="fd-chip fd-re">↻ 다시 불러오기</button><span class="fd-st">${st || (list.length + "개 · 쇼츠 제외")}</span></div><div class="fd-grid"></div>`;
@@ -652,7 +670,7 @@ function makeFeed(opt){
     const srcs = opt.sources; let k = 0, done = 0; const out = [], seen = {};
     render("불러오는 중… 0/" + srcs.length);
     const worker = () => { if (k >= srcs.length) return Promise.resolve(); const s = srcs[k++];
-      return one(s).then(a => { a.forEach(x => { if (!seen[x.v]) { seen[x.v] = 1; out.push(x); } }); done++; const st = opt.box.querySelector(".fd-st"); if (st && !FEED) st.textContent = "불러오는 중… " + done + "/" + srcs.length; return worker(); }); };
+      return one(s).then(a => { a.forEach(x => { if (!seen[x.v]) { seen[x.v] = 1; out.push(x); } }); done++; const st = opt.box && opt.box.querySelector(".fd-st"); if (st && !FEED) st.textContent = "불러오는 중… " + done + "/" + srcs.length; return worker(); }); };
     Promise.all([worker(), worker(), worker(), worker()]).then(() => { out.sort((a, b) => b.d - a.d); FEED = out; loading = false; render(); });
   }
   return { load };
@@ -665,7 +683,7 @@ const wdFeed = makeFeed({
   onPick: (list, k) => playWdIds(list, k)
 });
 function showWdFeed(){
-  stopAll();
+  histCloseTag("play"); stopAll(); histOpen(showWebdrama, () => !!$("wdFeedBox"), "feed");
   $("player").innerHTML = `<div class="wd-list"><div class="fd-head"><button type="button" class="fd-back" id="wdFdBack">← 웹드라마 목록</button><h2 style="margin:0">🔔 웹드라마 새 영상</h2></div><div id="wdFeedBox"></div></div>`;
   $("wdFdBack").onclick = showWebdrama;
   document.title = "웹드라마 새 영상 - 실시간 TV";
@@ -675,7 +693,7 @@ function showWdFeed(){
 async function playWdIds(vids, start){
   const allShort = new Set([].concat.apply([], Object.values(WD_SHORTS)));
   const picked = vids[start]; vids = vids.filter(x => x === picked || !allShort.has(x.v)); start = Math.max(0, vids.indexOf(picked));
-  stopAll();
+  stopAll(); histOpen(showWdFeed, () => !!document.querySelector(".wd-play"), "play");
   $("player").innerHTML = `<div class="wd-play">
     <div class="wd-bar"><button type="button" class="wd-back" id="wdBack">← 새 영상 목록</button><div class="wd-ttl">🔔 웹드라마 새 영상</div><button type="button" class="big-btn wd-big">⛶ 크게</button></div>
     <div class="wd-body"><div class="wd-main bigable"><div class="wd-v"><div id="wdHost"></div></div></div>
