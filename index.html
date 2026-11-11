@@ -122,6 +122,12 @@
   .wd-play { position:absolute; inset:0; display:flex; flex-direction:column; background:#fff; }
   .wd-bar { flex:none; display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid var(--line); }
   .wd-back { flex:none; border:0; border-radius:999px; padding:7px 14px; font-size:13px; font-weight:800; color:#fff; background:linear-gradient(95deg,#7ed6fb 10%,#b176f3 90%); cursor:pointer; }
+  .wd-mark { flex:none; border:1.5px solid #f5b301; background:#fffaf0; color:#9a6b00; border-radius:999px; padding:6px 12px; font-size:12.5px; font-weight:800; cursor:pointer; white-space:nowrap; }
+  .wd-mark.saved { background:#f5b301; color:#fff; }
+  .wd-resume { flex:none; font-size:11.5px; color:var(--sub); white-space:nowrap; }
+  .wd-resume button { border:0; background:none; color:#4b5bd6; font-weight:700; cursor:pointer; padding:0 2px; font-size:11.5px; }
+  .wd-card .mk { position:absolute; right:8px; top:8px; font-size:10.5px; font-weight:800; background:#f5b301; color:#fff; padding:2px 7px; border-radius:999px; }
+  .wd-toast { position:absolute; left:50%; bottom:18px; transform:translateX(-50%); background:rgba(20,24,30,.88); color:#fff; padding:8px 14px; border-radius:999px; font-size:12.5px; z-index:5; pointer-events:none; }
   .wd-ttl { flex:1; min-width:0; font-size:15px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .wd-ttl small { font-size:12px; color:var(--sub); font-weight:500; margin-left:6px; }
   .wd-body { flex:1; min-height:0; display:flex; }
@@ -139,6 +145,7 @@
   .wd-it img { flex:none; width:96px; aspect-ratio:16/9; object-fit:cover; border-radius:6px; background:#eee; }
   .wd-it .ti { flex:1; min-width:0; font-size:12.5px; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   @media (max-width: 760px) {
+    .wd-bar { flex-wrap:wrap; } .wd-ttl { order:3; flex-basis:100%; }
     body.wide.wdmode .stage.full .player { height:calc(100dvh - var(--tabsH)); }
     .wd-list { padding:14px 10px 30px; }
     .wd-grid { grid-template-columns:repeat(2, minmax(0,1fr)); gap:9px; }
@@ -210,6 +217,18 @@ window.addEventListener("message", e => {
   } else if (favs.length) toParent({ type:"LIVETV_FAVS_SET", favs: favs });   // 부모에 아직 없으면 여기 것을 처음 한 번 옮겨 둠
 });
 toParent({ type:"LIVETV_FAVS_GET" });
+/* 웹드라마 '여기까지 봄' 표시 — 버튼을 눌렀을 때만 저장 (자동 저장 없음). 핸드폰에서 지워지지 않게 myway.kr 저장소에도 함께 보관 */
+const MARK_KEY = "liveTvWdMarksV1";
+let wdMarks = {};
+try { wdMarks = JSON.parse(localStorage.getItem(MARK_KEY)) || {}; } catch(e) {}
+function saveMarks(){ try { localStorage.setItem(MARK_KEY, JSON.stringify(wdMarks)); } catch(e) {} toParent({ type:"LIVETV_MARKS_SET", marks: wdMarks }); }
+window.addEventListener("message", e => {
+  if (!FAV_PARENTS.includes(e.origin)) return;
+  const d = e.data; if (!d || d.type !== "LIVETV_MARKS") return;
+  if (d.marks && typeof d.marks === "object") { wdMarks = Object.assign({}, d.marks, wdMarks); try { localStorage.setItem(MARK_KEY, JSON.stringify(wdMarks)); } catch(err) {} }
+  else if (Object.keys(wdMarks).length) toParent({ type:"LIVETV_MARKS_SET", marks: wdMarks });
+});
+toParent({ type:"LIVETV_MARKS_GET" });
 
 /* 상단 탭: 스포츠·인터넷방송·지역·종교·키즈·라이프·캠 탭은 숨김 (채널은 '전체'에 그대로)
    그 자리에 채널 바로가기 탭 [SOOP] [MLB다시보기] [치지직] → 누르면 그 채널 화면 바로, 맨 뒤 [해외] */
@@ -437,7 +456,7 @@ function showWebdrama(){
   $("now").innerHTML = "";
   document.title = "웹드라마 - 실시간 TV";
   const card = (w, i) => { const c = WD_COL[i % WD_COL.length];
-    return `<div class="wd-card" data-wd="${i}" style="--c1:${c[0]};--c2:${c[1]}"><span class="tg">${w.g === "ch" ? "채널" : "작품"}</span><b>${esc(w.n)}</b><i>${esc(w.d)}</i></div>`; };
+    return `<div class="wd-card" data-wd="${i}" style="--c1:${c[0]};--c2:${c[1]}"><span class="tg">${w.g === "ch" ? "채널" : "작품"}</span>${wdMarks[w.list] ? '<span class="mk">📌 이어보기</span>' : ''}<b>${esc(w.n)}</b><i>${esc(w.d)}</i></div>`; };
   const sec = (g, t, sub) => `<h2>${t}<small>${sub}</small></h2><div class="wd-grid">` + WEBDRAMA.map((w, i) => w.g === g ? card(w, i) : "").join("") + `</div>`;
   $("player").innerHTML = `<div class="wd-list">` + sec("s", "인기 작품", "누르면 가장 최근 회부터 재생 · 오른쪽에 회차 목록")
     + sec("ch", "웹드라마 채널", "누르면 그 채널의 최신 영상부터 재생") + `</div>`;
@@ -450,7 +469,7 @@ async function playWebdrama(i){
   const w = WEBDRAMA[i]; if (!w) return;
   stopAll();
   $("player").innerHTML = `<div class="wd-play">
-    <div class="wd-bar"><button type="button" class="wd-back" id="wdBack">← 웹드라마 목록</button><div class="wd-ttl">${esc(w.n)}<small>${esc(w.d)}</small></div></div>
+    <div class="wd-bar"><button type="button" class="wd-back" id="wdBack">← 웹드라마 목록</button><div class="wd-ttl">${esc(w.n)}<small>${esc(w.d)}</small></div><span class="wd-resume" id="wdResume"></span><button type="button" class="wd-mark" id="wdMark" title="지금 보는 회차와 시간을 기억해 두고, 다음에 이 작품을 열면 여기부터 재생">📌 여기까지 봄</button></div>
     <div class="wd-body"><div class="wd-main"><div class="wd-v"><div id="wdHost"></div></div></div>
     <aside class="wd-side"><div class="wd-head">회차 목록<span id="wdCnt">불러오는 중…</span></div><div class="wd-items" id="wdItems"></div></aside></div></div>`;
   $("wdBack").onclick = showWebdrama;
@@ -459,6 +478,21 @@ async function playWebdrama(i){
   if (!$("wdHost")) return;
   const isSeries = w.g === "s";
   let built = false, jumped = false;
+  const mark = wdMarks[w.list] || null;
+  let seekTo = 0;
+  function toast(msg){ const p = document.querySelector(".wd-play"); if (!p) return; const t = document.createElement("div"); t.className = "wd-toast"; t.textContent = msg; p.appendChild(t); setTimeout(() => t.remove(), 1800); }
+  function fmt(sec){ sec = Math.floor(sec || 0); const m = Math.floor(sec / 60), ss = sec % 60; return m + ":" + (ss < 10 ? "0" : "") + ss; }
+  $("wdMark").onclick = () => {
+    if (!wdPlayer) return;
+    let ids = [], idx = 0, t = 0; try { ids = wdPlayer.getPlaylist() || []; idx = wdPlayer.getPlaylistIndex(); t = wdPlayer.getCurrentTime(); } catch(e) {}
+    if (!ids[idx]) return;
+    wdMarks[w.list] = { v: ids[idx], t: Math.floor(t), at: Date.now() }; saveMarks();
+    $("wdMark").classList.add("saved"); $("wdMark").textContent = "📌 저장됨";
+    $("wdResume").innerHTML = `${idx + 1}번째 영상 ${fmt(t)} 표시함 <button type="button" id="wdUnmark">지우기</button>`;
+    $("wdUnmark").onclick = unmark;
+    toast("여기까지 봤다고 기억했어요 — 다음에 이 작품을 열면 여기부터 나와요");
+  };
+  function unmark(){ delete wdMarks[w.list]; saveMarks(); $("wdResume").textContent = ""; $("wdMark").classList.remove("saved"); $("wdMark").textContent = "📌 여기까지 봄"; toast("표시를 지웠어요"); }
   function highlight(){
     const wrap = $("wdItems"); if (!wrap || !wdPlayer) return;
     let idx = -1; try { idx = wdPlayer.getPlaylistIndex(); } catch(e) {}
@@ -471,6 +505,15 @@ async function playWebdrama(i){
     if (!ids.length) { if ((tries || 0) < 12) setTimeout(() => build((tries || 0) + 1), 600); return; }
     built = true;
     /* 작품은 1화부터 정렬된 목록 → 마지막 회(최신회)로 이동. 채널은 최신 영상이 이미 맨 앞 */
+    const mk = mark ? ids.indexOf(mark.v) : -1;
+    if (mk >= 0 && !jumped) {   /* '여기까지 봄' 표시가 있으면 그 회차·시간부터 */
+      jumped = true; started = false; seekTo = mark.t || 0;
+      try { wdPlayer.playVideoAt(mk); } catch(e) {} arm();
+      $("wdResume").innerHTML = `📌 표시한 곳(${mk + 1}번째 ${fmt(mark.t)})부터 <button type="button" id="wdLatest">최신부터 보기</button> <button type="button" id="wdUnmark">지우기</button>`;
+      $("wdLatest").onclick = () => { seekTo = 0; started = false; try { wdPlayer.playVideoAt(isSeries ? ids.length - 1 : 0); } catch(e) {} arm(); };
+      $("wdUnmark").onclick = unmark;
+      $("wdMark").classList.add("saved"); $("wdMark").textContent = "📌 저장됨";
+    }
     if (isSeries && !jumped) { jumped = true; started = false; try { wdPlayer.playVideoAt(ids.length - 1); } catch(e) {} arm(); }
     $("wdCnt").textContent = ids.length + "개 · 최신이 위";
     const wrap = $("wdItems"); wrap.innerHTML = "";
@@ -503,7 +546,7 @@ async function playWebdrama(i){
       onReady: e => { try { e.target.mute(); e.target.playVideo(); } catch(err) {} setTimeout(() => build(0), 400); arm(); },
       onError: () => skip(),
       onStateChange: e => {
-        if (e.data === 1 && !started) { started = true; clearTimeout(watch); try { wdPlayer.unMute(); wdPlayer.setVolume(80); } catch(err) {} }
+        if (e.data === 1 && !started) { started = true; clearTimeout(watch); try { wdPlayer.unMute(); wdPlayer.setVolume(80); } catch(err) {} if (seekTo > 5) { const t = seekTo; seekTo = 0; try { wdPlayer.seekTo(t, true); } catch(err) {} } }
         if (!built) build(0); highlight();
       }
     }
