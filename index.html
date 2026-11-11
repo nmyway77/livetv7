@@ -418,18 +418,18 @@ $("player").addEventListener("click", e => {
    채널: 그 채널 업로드 목록(최신 영상이 맨 앞) / 작품: 공식 재생목록(1화부터 정렬 → 마지막 회부터 재생)
    카드를 누르면 최신회가 바로 재생되고, 오른쪽(핸드폰은 아래)에 회차 목록 — 눌러서 이전 회차 보기 */
 const WEBDRAMA = [
-  /* 채널 (최신 업로드순) */
-  { n:"짧은대본", d:"ShortPaper · 공감 연애", list:"UUhgOgRNxrtCcVARDQT_c-Zg", v:"__CIlV8MbBs", g:"ch" },
-  { n:"치즈필름", d:"CheezeFilm", list:"UUYn09ySlShmzBtYwl1OgOsA", v:"-ihjY0mZlG8", g:"ch" },
-  { n:"픽고", d:"PICKGO", list:"UU2fRmj7qqiuD5VXtBO4hh2A", v:"tse-WXh_Zno", g:"ch" },
-  { n:"플레이리스트", d:"PLAYLIST Originals", list:"UUid83oPnsL-4ZEo8CyQr6Rg", v:"hGsdXg8H0-c", g:"ch" },
-  { n:"콬TV", d:"와이낫미디어 · KOK TV", list:"UUybPxZoFDPR1qbN04daAc2g", v:"Gw2evCjPhds", g:"ch" },
-  { n:"낄낄상회", d:"스케치 코미디", list:"UULVwgJVAzHwA-zv88mrAeZw", v:"scQLTQf_Ubo", g:"ch" },
-  { n:"끄적끄적", d:"Writing Down", list:"UUQ1Rn1d6FfB3x2b0n0J6pMQ", v:"W-prwexGwxs", g:"ch" },
-  { n:"찐엔딩", d:"Real Ending", list:"UUfela5_jdX8ZKhGGaxyel9g", v:"HVHZxv0SkWE", g:"ch" },
-  { n:"심스틸러", d:"코미디언 웹드라마", list:"UUe9jeTrEpEXYvRrrynEU4Zw", v:"hosfRn7J3J4", g:"ch" },
-  { n:"석필름", d:"SUKFILM", list:"UU749ed-Qfdk64DyyKpoItEg", v:"qYZ8hcNX19s", g:"ch" },
-  { n:"디비디방", d:"DVD room · 스케치 코미디", list:"UUS5BOISYzyZJdRftDwubXug", v:"ZA7uuSa3P94", g:"ch" },
+  /* 채널 (최신 업로드순) — UULF = 그 채널의 일반 동영상만(쇼츠 제외) */
+  { n:"짧은대본", d:"ShortPaper · 공감 연애", list:"UULFhgOgRNxrtCcVARDQT_c-Zg", v:"__CIlV8MbBs", g:"ch" },
+  { n:"치즈필름", d:"CheezeFilm", list:"UULFYn09ySlShmzBtYwl1OgOsA", v:"-ihjY0mZlG8", g:"ch" },
+  { n:"픽고", d:"PICKGO", list:"UULF2fRmj7qqiuD5VXtBO4hh2A", v:"tse-WXh_Zno", g:"ch" },
+  { n:"플레이리스트", d:"PLAYLIST Originals", list:"UULFid83oPnsL-4ZEo8CyQr6Rg", v:"hGsdXg8H0-c", g:"ch" },
+  { n:"콬TV", d:"와이낫미디어 · KOK TV", list:"UULFybPxZoFDPR1qbN04daAc2g", v:"Gw2evCjPhds", g:"ch" },
+  { n:"낄낄상회", d:"스케치 코미디", list:"UULFLVwgJVAzHwA-zv88mrAeZw", v:"scQLTQf_Ubo", g:"ch" },
+  { n:"끄적끄적", d:"Writing Down", list:"UULFQ1Rn1d6FfB3x2b0n0J6pMQ", v:"W-prwexGwxs", g:"ch" },
+  { n:"찐엔딩", d:"Real Ending", list:"UULFfela5_jdX8ZKhGGaxyel9g", v:"HVHZxv0SkWE", g:"ch" },
+  { n:"심스틸러", d:"코미디언 웹드라마", list:"UULFe9jeTrEpEXYvRrrynEU4Zw", v:"hosfRn7J3J4", g:"ch" },
+  { n:"석필름", d:"SUKFILM", list:"UULF749ed-Qfdk64DyyKpoItEg", v:"qYZ8hcNX19s", g:"ch" },
+  { n:"디비디방", d:"DVD room · 스케치 코미디", list:"UULFS5BOISYzyZJdRftDwubXug", v:"ZA7uuSa3P94", g:"ch" },
   /* 작품 (공식 재생목록) */
   { n:"연애플레이리스트 1", d:"플레이리스트", list:"PL920OTfqSyzcyEAPWvePd5leialysnmJb", v:"3rj7xM3Vmc4", g:"s" },
   { n:"에이틴", d:"플레이리스트", list:"PL920OTfqSyzd6xANfwFFCUG12yPvBhGZO", v:"nca7i5oX09o", g:"s" },
@@ -467,7 +467,7 @@ function showWebdrama(){
   $("now").innerHTML = "";
   document.title = "웹드라마 - 실시간 TV";
   const card = (w, i) => { const c = WD_COL[i % WD_COL.length];
-    return `<div class="wd-card${w.v ? " has-th" : ""}" data-wd="${i}" style="--c1:${c[0]};--c2:${c[1]}">${w.v ? `<img class="th" src="https://i.ytimg.com/vi/${w.v}/hqdefault.jpg" alt="" loading="lazy" onerror="this.parentNode.classList.remove('has-th');this.remove()">` : ""}<span class="tg">${w.g === "ch" ? "채널" : "작품"}</span>${wdMarks[w.list] ? '<span class="mk">📌 이어보기</span>' : ''}<b>${esc(w.n)}</b><i>${esc(w.d)}</i></div>`; };
+    return `<div class="wd-card${w.v ? " has-th" : ""}" data-wd="${i}" style="--c1:${c[0]};--c2:${c[1]}">${w.v ? `<img class="th" src="https://i.ytimg.com/vi/${w.v}/hqdefault.jpg" alt="" loading="lazy" onerror="this.parentNode.classList.remove('has-th');this.remove()">` : ""}<span class="tg">${w.g === "ch" ? "채널" : "작품"}</span>${(wdMarks[w.list] || wdMarks['UU' + w.list.slice(4)]) ? '<span class="mk">📌 이어보기</span>' : ''}<b>${esc(w.n)}</b><i>${esc(w.d)}</i></div>`; };
   const sec = (g, t, sub) => `<h2>${t}<small>${sub}</small></h2><div class="wd-grid">` + WEBDRAMA.map((w, i) => w.g === g ? card(w, i) : "").join("") + `</div>`;
   $("player").innerHTML = `<div class="wd-list">` + sec("s", "인기 작품", "누르면 가장 최근 회부터 재생 · 오른쪽에 회차 목록")
     + sec("ch", "웹드라마 채널", "누르면 그 채널의 최신 영상부터 재생") + `</div>`;
@@ -489,7 +489,7 @@ async function playWebdrama(i){
   if (!$("wdHost")) return;
   const isSeries = w.g === "s";
   let built = false, jumped = false;
-  const mark = wdMarks[w.list] || null;
+  const mark = wdMarks[w.list] || (w.list.startsWith("UULF") ? wdMarks["UU" + w.list.slice(4)] : null) || null;
   let seekTo = 0;
   function toast(msg){ const p = document.querySelector(".wd-play"); if (!p) return; const t = document.createElement("div"); t.className = "wd-toast"; t.textContent = msg; p.appendChild(t); setTimeout(() => t.remove(), 1800); }
   function fmt(sec){ sec = Math.floor(sec || 0); const m = Math.floor(sec / 60), ss = sec % 60; return m + ":" + (ss < 10 ? "0" : "") + ss; }
@@ -503,7 +503,7 @@ async function playWebdrama(i){
     $("wdUnmark").onclick = unmark;
     toast("여기까지 봤다고 기억했어요 — 다음에 이 작품을 열면 여기부터 나와요");
   };
-  function unmark(){ delete wdMarks[w.list]; saveMarks(); $("wdResume").textContent = ""; $("wdMark").classList.remove("saved"); $("wdMark").textContent = "📌 여기까지 봄"; toast("표시를 지웠어요"); }
+  function unmark(){ delete wdMarks[w.list]; if (w.list.startsWith("UULF")) delete wdMarks["UU" + w.list.slice(4)]; saveMarks(); $("wdResume").textContent = ""; $("wdMark").classList.remove("saved"); $("wdMark").textContent = "📌 여기까지 봄"; toast("표시를 지웠어요"); }
   function highlight(){
     const wrap = $("wdItems"); if (!wrap || !wdPlayer) return;
     let idx = -1; try { idx = wdPlayer.getPlaylistIndex(); } catch(e) {}
