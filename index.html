@@ -157,6 +157,9 @@
 
   * { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
   input, textarea { -webkit-user-select:text; user-select:text; }
+  /* 웹드라마 전용 화면(?wd=1): 채널 탭·목록 없이 화면 전체 */
+  body.wdonly { --tabsH:0px; }
+  body.wdonly .tabs { display:none; }
 </style>
 </head>
 <body>
@@ -263,7 +266,7 @@ function renderTabs(){
   document.body.classList.toggle("wdmode", currentCat === "웹드라마");
   const cats = ["전체", "즐겨찾기", ...new Set(CHANNELS.map(c => c.cat))].filter(c => !HIDE_CATS.includes(c));
   const btn = (cat, label) => `<button class="${cat===currentCat?'on':''}" data-cat="${esc(cat)}">${esc(label)}</button>`;
-  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? btn("OTT", "OTT") : "") + (c === "예능·교양" ? btn("웹드라마", "웹드라마") : "")).join("")   // OTT는 지상파 오른쪽
+  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? btn("OTT", "OTT") : "") ).join("")   // OTT는 지상파 오른쪽
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("")
     + (CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "");
 }
@@ -573,6 +576,9 @@ try { const r = JSON.parse(sessionStorage.getItem(RET_KEY) || "null"); sessionSt
         if (r.y) requestAnimationFrame(() => { side.scrollTop = r.y; });                   // 채널 목록 스크롤 위치도
         requestAnimationFrame(() => { const t = $("tabs").querySelector("button.on"); if (t) { const tb = $("tabs"); tb.scrollLeft = t.offsetLeft - (tb.clientWidth - t.offsetWidth) / 2; } });   // 탭바에서 그 탭이 보이게
       } } catch(err) {}
+/* myway.kr 위쪽 [🎭 웹드라마] 버튼: ?wd=1 로 열면 채널 탭 없이 웹드라마 화면만 */
+const WD_ONLY = /[?&]wd=1/.test(location.search);
+if (WD_ONLY) { document.body.classList.add("wdonly"); currentCat = "웹드라마"; renderTabs(); }
 if (currentCat === "OTT") showOtt();
 else if (currentCat === "웹드라마") showWebdrama();
 else if (retSlug) play(retSlug);   // 화살표 채널로 나갔다가 백버튼으로 돌아온 경우만 → 그 채널 바로 재생
