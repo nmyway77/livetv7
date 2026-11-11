@@ -247,7 +247,7 @@ function stopAll(){
   if (v) { v.pause(); v.removeAttribute("src"); v.load(); }
 }
 
-async function play(slug){
+async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그대로 띄우고 재생만 안 함
   const c = CHANNELS.find(x => x.slug === slug);
   if (!c) return;
   stopAll();
@@ -262,7 +262,8 @@ async function play(slug){
     const src = c.type === "youtube"
       ? `https://www.youtube.com/embed/${c.id}?autoplay=1&mute=1&playsinline=1`
       : `https://www.youtube.com/embed/live_stream?channel=${c.id}&autoplay=1&mute=1&playsinline=1`;
-    box.innerHTML = `<iframe src="${src}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    const src2 = noAuto ? src.replace("autoplay=1&mute=1&", "autoplay=0&") : src;
+    box.innerHTML = `<iframe src="${src2}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
   } else if (c.type === "link") {
     if (ext) {                  // 화살표로 클릭 유도 → 방송사 공식 페이지 별도 창
       box.innerHTML = `<a class="tap" href="${esc(c.url)}" target="_blank" rel="noopener">
@@ -363,7 +364,7 @@ else if (retSlug) play(retSlug);   // 화살표 채널로 나갔다가 백버튼
 else {
   /* 처음 열 때는 항상 정지 화면. 주소 끝에 남은 #채널(새로고침·뒤로가기 때 브라우저가 되살린 값)로는 자동 재생하지 않음 */
   try { history.replaceState(null, "", location.pathname + location.search); } catch(err) {}
-  showStart("ytn");   // 처음 화면은 YTN 정지 화면만 — ▶ 누르면 YTN 재생, 탭·다른 채널을 누르면 그 채널이 바로 자동 재생
+  play("ytn", true);   // 처음 화면: 원래 YTN 유튜브 화면 그대로, 자동 재생만 안 함 (▶ 누르면 재생) — 탭·다른 채널을 누르면 바로 자동 재생
 }   // 처음 연 사람: 자동 재생하지 않고 정지 화면(▶ 눌러서 보기) — 누르면 YTN, 다른 채널을 누르면 그 채널이 바로 재생
 </script>
 <script>
