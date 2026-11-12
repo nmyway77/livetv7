@@ -364,7 +364,7 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
         <div class="arw">👇</div>
         <div class="ttl">${esc(c.name)}</div>
         <div class="btn">▶ 눌러서 보기 ↗</div>
-        <div class="sub">${c.newtab && IS_MOBILE ? "새 탭으로 열려요 — 돌아올 때는 그 탭을 닫으세요" : IS_MOBILE ? "핸드폰에서는 방송사 공식 페이지(새 창)로 열려요" : "이 채널은 방송사가 화면 안 재생을 막아 별도 창으로 열려요"}</div></a>`;
+        <div class="sub">${c.newtab && IS_MOBILE ? "새 탭으로 열려요 — 뒤로가기를 끝까지 누르거나 그 탭을 닫으면 돌아와요" : IS_MOBILE ? "핸드폰에서는 방송사 공식 페이지(새 창)로 열려요" : "이 채널은 방송사가 화면 안 재생을 막아 별도 창으로 열려요"}</div></a>`;
     } else {                    // PC: 지상파도 화면에서 바로 재생 (핸드폰은 SBS·채널A만) — SBS·채널A는 앱 확인창 차단(sandbox)
       box.innerHTML = `<iframe src="${esc(c.url)}"${/sbs\.co\.kr|ichannela\.com/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""} referrerpolicy="no-referrer" allow="${/imbc\.com/i.test(c.url) ? "fullscreen" : "autoplay; encrypted-media; picture-in-picture; fullscreen"}" allowfullscreen></iframe>`;   // MBC는 allow를 fullscreen만 줘야 화면 안에서 나옴 (테스트로 확인)
     }
@@ -739,9 +739,19 @@ renderTabs(); renderGrid();
 /* 핸드폰: 화살표(KBS·MBC 등)를 누르면 새 탭 대신 같은 창(최상위)에서 열기 → 백버튼으로 myway.kr 복귀.
    돌아오면 나갔던 채널을 다시 보여 줌 (그 탭 세션에서 1회만) */
 const RET_KEY = "liveTvReturnV1";
+const NATIVE_OPEN = window.open.bind(window);   // 아래쪽에서 핸드폰용으로 window.open을 바꾸기 전의 원래 것 (진짜 새 탭)
 $("player").addEventListener("click", e => {
   const a = e.target.closest("a.tap:not(.start)"); if (!a || !IS_MOBILE) return;
-  if (a.hasAttribute("data-newtab")) return;   // 진짜 새 탭으로 여는 채널(MBC 새창): 뒤로가기가 막히는 사이트라 탭을 닫아 복귀
+  if (a.hasAttribute("data-newtab")) {
+    /* 진짜 새 탭으로 여는 채널(MBC 새창). 새 탭을 징검다리(back.html)로 먼저 연 뒤 방송사로 넘어감 →
+       방송사에서 여러 화면을 본 뒤에도 뒤로가기를 끝까지 누르면 탭이 닫히거나 myway.kr로 돌아옴 */
+    e.preventDefault(); e.stopPropagation();
+    let via = a.href;
+    try { const b = new URL("back.html", location.href); b.searchParams.set("u", a.href); b.searchParams.set("t", Date.now()); via = b.href; } catch(err) {}
+    let w = null; try { w = NATIVE_OPEN(via, "_blank"); } catch(err) {}
+    if (!w) { try { (window.top || window).location.href = via; } catch(err) { location.href = via; } }   // 새 탭이 막히면 같은 창에서
+    return;
+  }
   e.preventDefault();
   try { sessionStorage.setItem(RET_KEY, JSON.stringify({ slug: curSlug, cat: currentCat, y: side.scrollTop, t: Date.now() })); } catch(err) {}
   try { (window.top || window).location.href = a.href; } catch(err) { window.open(a.href, "_blank", "noopener"); }

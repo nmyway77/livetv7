@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>MYWAY TV</title>
+<style>
+  html,body{height:100%;margin:0;}
+  body{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0c0d14;color:#f3f2f8;font-family:Pretendard,-apple-system,"Malgun Gothic",sans-serif;text-align:center;padding:24px;box-sizing:border-box;}
+  p{margin:0;font-size:15px;color:#a3a6ba;}
+  a{display:inline-block;padding:13px 22px;border-radius:999px;background:linear-gradient(135deg,#7d6fe8,#b176f3);color:#fff;font-weight:700;font-size:15px;text-decoration:none;}
+</style>
+</head>
+<body>
+<p id="msg">여는 중…</p>
+<a id="btn" href="https://myway.kr/">myway.kr로 돌아가기</a>
+<script>
+/* 새 탭으로 여는 방송사(MBC 새창)용 징검다리 페이지.
+   새 탭의 첫 기록을 이 페이지로 두고 방송사로 넘어감 → 방송사에서 이것저것 본 뒤 뒤로가기를 끝까지 누르면
+   이 페이지로 돌아오고, 여기서 탭을 닫거나(안 닫히면) myway.kr로 보냄. (첫 기록이 방송사 페이지면 뒤로가기가 거기서 막힘) */
+(function(){
+  var HOME = 'https://myway.kr/';
+  var q = new URLSearchParams(location.search), u = q.get('u') || '', KEY = 'liveTvBack_' + (q.get('t') || '0');
+  var ALLOW = /(^|\.)(imbc\.com|kbs\.co\.kr|sbs\.co\.kr|ichannela\.com|tvchosun\.com|jtbc\.co\.kr|mbn\.co\.kr|naver\.com|youtube\.com)$/i;
+  function target(){
+    try { var x = new URL(u); if (!/^https?:$/.test(x.protocol)) return ''; return (ALLOW.test(x.hostname) || x.hostname === location.hostname) ? x.href : ''; } catch(e){ return ''; }
+  }
+  function goHome(){
+    document.getElementById('msg').textContent = 'myway.kr로 돌아가는 중…';
+    try { window.close(); } catch(e){}
+    setTimeout(function(){ try { location.replace(HOME); } catch(e){ location.href = HOME; } }, 350);   /* 탭이 안 닫히는 브라우저는 이 탭에서 myway.kr로 */
+  }
+  var seen = false; try { seen = sessionStorage.getItem(KEY) === '1'; } catch(e){}
+  var t = target();
+  if (!seen && t){
+    try { sessionStorage.setItem(KEY, '1'); } catch(e){}
+    try { window.opener = null; } catch(e){}
+    /* 이 페이지를 기록에 남겨야 뒤로가기로 돌아올 수 있음. 페이지를 여는 도중의 이동은 브라우저가 '바꿔치기'로 처리해
+       기록이 안 남으므로, 기록을 하나 더 만든 뒤 그 칸을 방송사 주소로 바꿈 → [이 페이지] [방송사] 순서가 됨 */
+    try { history.pushState({ go: 1 }, '', location.href); } catch(e){}
+    location.replace(t);
+  } else goHome();
+  /* 뒤로가기로 (캐시에서) 되살아난 경우 */
+  window.addEventListener('pageshow', function(e){ if (e.persisted) goHome(); });
+})();
+</script>
+</body>
+</html>
