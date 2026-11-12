@@ -217,6 +217,8 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp
 /* 핸드폰·태블릿 판별 — 이 경우만 KBS(공식 플레이어) 채널을 화살표 클릭 유도로 */
 const IS_MOBILE = /Android|iPhone|iPad|iPod|Mobile|SamsungBrowser/i.test(navigator.userAgent) ||
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+/* 핸드폰만 판별 (태블릿·아이패드 제외) — KBS는 태블릿에서는 화면 안 재생이 되므로 핸드폰에서만 화살표 */
+const IS_PHONE = /iPhone|iPod/i.test(navigator.userAgent) || (/Android/i.test(navigator.userAgent) && /Mobile/i.test(navigator.userAgent));
 
 /* 좁은 화면이면 채널 목록을 화면 아래로, 넓으면 오른쪽으로 */
 const side = document.createElement("aside");
@@ -287,7 +289,7 @@ function inCat(c){
 }
 const MOB_INLINE = /sbs\.co\.kr|imbc\.com|ichannela\.com|sooplive\.co\.kr|tv\.garden|mlblive\.net/i;   // SBS·채널A·SOOP·TV Garden·MLB다시보기는 핸드폰에서도 화면 안에서 바로 재생
 const ARROW_SLUGS = ["arirang"];   // PC·핸드폰 모두 화살표(별도 창): 아리랑TV (MLB다시보기는 화면 안 재생으로 변경)
-const isExt = c => c.type === "link" && (!!c.newwin || ARROW_SLUGS.includes(c.slug) || (IS_MOBILE && !MOB_INLINE.test(c.url)));   // 화살표(별도 창) 채널: 치지직·MBC·TV조선, 핸드폰 KBS 등
+const isExt = c => c.type === "link" && (!!c.newwin || ARROW_SLUGS.includes(c.slug) || (IS_MOBILE && !MOB_INLINE.test(c.url) && !(!IS_PHONE && /kbs\.co\.kr/i.test(c.url))));   // 화살표(별도 창) 채널: 치지직·MBC·TV조선, 핸드폰 KBS 등
 function renderTabs(){
   document.body.classList.toggle("wide", WIDE_TABS.includes(currentCat));
   document.body.classList.toggle("ottmode", currentCat === "OTT");
