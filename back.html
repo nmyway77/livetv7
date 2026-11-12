@@ -31,13 +31,20 @@
     try { window.close(); } catch(e){}
     setTimeout(function(){ try { location.replace(HOME); } catch(e){ location.href = HOME; } }, 350);   /* 탭이 안 닫히는 브라우저는 이 탭에서 myway.kr로 */
   }
-  var seen = false; try { seen = sessionStorage.getItem(KEY) === '1'; } catch(e){}
+  /* 뒤로가기로 이 페이지에 돌아온 것인지 판별 — 세 가지 중 하나라도 맞으면 '돌아온 것'.
+     (저장소(sessionStorage)만 믿으면 아이폰 사파리에서 값이 안 남는 경우가 있어 방송사로 다시 튕겼음) */
+  var seen = false;
+  try { if (history.state && (history.state.back || history.state.go)) seen = true; } catch(e){}            /* 1) 이 기록 칸에 남겨 둔 표시 */
+  try { var nv = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+        if ((nv && nv.type === 'back_forward') || (performance.navigation && performance.navigation.type === 2)) seen = true; } catch(e){}   /* 2) 브라우저가 알려 주는 '뒤로/앞으로 이동' */
+  try { if (sessionStorage.getItem(KEY) === '1') seen = true; } catch(e){}                                   /* 3) 탭 저장소 */
   var t = target();
   if (!seen && t){
     try { sessionStorage.setItem(KEY, '1'); } catch(e){}
     try { window.opener = null; } catch(e){}
     /* 이 페이지를 기록에 남겨야 뒤로가기로 돌아올 수 있음. 페이지를 여는 도중의 이동은 브라우저가 '바꿔치기'로 처리해
-       기록이 안 남으므로, 기록을 하나 더 만든 뒤 그 칸을 방송사 주소로 바꿈 → [이 페이지] [방송사] 순서가 됨 */
+       기록이 안 남으므로, 이 칸에 표시를 남기고 기록을 하나 더 만든 뒤 그 칸을 방송사 주소로 바꿈 → [이 페이지] [방송사] 순서 */
+    try { history.replaceState({ back: 1 }, '', location.href); } catch(e){}
     try { history.pushState({ go: 1 }, '', location.href); } catch(e){}
     location.replace(t);
   } else goHome();
