@@ -298,6 +298,33 @@ function inCat(c){
 const MOB_INLINE = /sbs\.co\.kr|imbc\.com|ichannela\.com|jtbc\.co\.kr|sooplive\.co\.kr|tv\.garden|mlblive\.net/i;   // SBS·채널A·SOOP·TV Garden·MLB다시보기는 핸드폰에서도 화면 안에서 바로 재생
 /* 아이폰 JTBC: 카톡으로 열면 화면 안에서 나오지만 사파리 등에서는 화면 안 재생이 안 됨 → 카톡이 아닐 때만 화살표(방송사 공식 화면)로 */
 const JTBC_ARROW = /iPhone|iPod/i.test(navigator.userAgent) && !/KAKAOTALK/i.test(navigator.userAgent);
+/* 아이폰 사파리(홈 화면 아이콘 포함): JTBC는 공식 화면을 새 창으로 열어도 안 나옴 → 크롬 앱으로 넘김 (마이웨이 드라마VOD의 MBC와 같은 방식) */
+const IOS_SAFARI = /iPhone|iPod/i.test(navigator.userAgent) && !/CriOS|FxiOS|EdgiOS|KAKAOTALK|NAVER\(|Whale|DaumApps|Instagram|FBAN|FBAV|Line\//i.test(navigator.userAgent);
+const chromeHandoff = c => IOS_SAFARI && c.type === "link" && /jtbc\.co\.kr/i.test(c.url);
+function goChrome(u){
+  const c = String(u).replace(/^https:\/\//i, "googlechromes://");
+  try { (window.top || window).location.href = c; } catch(err) { location.href = c; }
+  /* 크롬 앱이 없는 폰: 잠시 뒤에도 이 화면이 그대로면 다른 방법 안내 (자동으로 넘기지 않고, 눌러야 열림) */
+  setTimeout(() => { if (!document.hidden) showChromeFallback(u); }, 2500);
+}
+function showChromeFallback(u){
+  const old = document.getElementById("chromeFallback"); if (old) old.remove();
+  const box = document.createElement("div"); box.id = "chromeFallback";
+  box.style.cssText = "position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:99999;width:min(92vw,360px);box-sizing:border-box;padding:13px 14px;border-radius:16px;background:rgba(25,27,45,.95);color:#fff;font-size:13.5px;box-shadow:0 8px 24px rgba(0,0,0,.3);text-align:center;";
+  const msg = document.createElement("div"); msg.textContent = "크롬 앱이 없나요? 다른 방법으로 열 수 있어요"; msg.style.cssText = "font-weight:600;margin-bottom:10px;";
+  const row = document.createElement("div"); row.style.cssText = "display:flex;gap:8px;";
+  const go = t => { try { (window.top || window).location.href = t; } catch(err) { location.href = t; } };
+  const mk = (label, bg, fn) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = label;
+    b.style.cssText = "flex:1 1 0;min-height:42px;border:none;border-radius:11px;color:#fff;font-size:13.5px;font-weight:700;-webkit-tap-highlight-color:transparent;background:" + bg + ";";
+    b.addEventListener("click", ev => { ev.preventDefault(); ev.stopPropagation(); box.remove(); fn(); });
+    return b;
+  };
+  row.appendChild(mk("네이버 앱으로 열기", "#03c75a", () => go("naversearchapp://inappbrowser?url=" + encodeURIComponent(u) + "&target=new&version=6")));
+  row.appendChild(mk("그냥 열기", "rgba(255,255,255,.2)", () => go(u)));
+  box.appendChild(msg); box.appendChild(row); document.body.appendChild(box);
+  setTimeout(() => { if (box.parentNode) box.remove(); }, 12000);
+}
 const ARROW_SLUGS = ["arirang"];   // PC·핸드폰 모두 화살표(별도 창): 아리랑TV (MLB다시보기는 화면 안 재생으로 변경)
 /* 핸드폰 KBS: 공식 화면이 화면 안에 안 떠서 화살표(새 창)였던 채널 → 방송 주소를 받아 화면 안에서 바로 재생 (마이웨이 KBS 보이는 라디오와 같은 방식).
    주소를 못 받거나 재생이 안 되는 채널은 그때만 예전처럼 화살표로 되돌림. 태블릿·PC는 공식 화면이 화면 안에 잘 나오므로 그대로 */
@@ -408,11 +435,11 @@ function popSpec(){
 }
 /* 화살표(별도 창) 안내 화면 */
 function tapHtml(c, popped){
-  return `<a class="tap" href="${esc(c.url)}" target="_blank" rel="noopener"${c.newtab ? ' data-newtab="1"' : ""}>
+  return `<a class="tap" href="${esc(c.url)}" target="_blank" rel="noopener"${c.newtab ? ' data-newtab="1"' : ""}${chromeHandoff(c) ? ' data-chrome="1"' : ""}>
         <div class="arw">👇</div>
         <div class="ttl">${esc(c.name)}</div>
-        <div class="btn">${popped ? "▶ 창 다시 띄우기 ↗" : "▶ 눌러서 보기 ↗"}</div>
-        <div class="sub">${!IS_MOBILE ? (popped ? "화면 위에 별도 창으로 재생 중 — 다른 채널을 누르면 창이 닫혀요" : "누르면 화면 자리에 별도 창으로 열려요") : c.newtab && IS_MOBILE ? "새 탭으로 열려요 — 뒤로가기를 끝까지 누르거나 그 탭을 닫으면 돌아와요" : IS_MOBILE ? "핸드폰에서는 방송사 공식 페이지(새 창)로 열려요" : "이 채널은 방송사가 화면 안 재생을 막아 별도 창으로 열려요"}</div></a>`;
+        <div class="btn">${popped ? "▶ 창 다시 띄우기 ↗" : chromeHandoff(c) ? "▶ 크롬으로 보기 ↗" : "▶ 눌러서 보기 ↗"}</div>
+        <div class="sub">${chromeHandoff(c) ? "아이폰 사파리에서는 안 나와서 크롬 앱으로 열려요 — 돌아올 때는 화면 왼쪽 위 ◀ Safari" : !IS_MOBILE ? (popped ? "화면 위에 별도 창으로 재생 중 — 다른 채널을 누르면 창이 닫혀요" : "누르면 화면 자리에 별도 창으로 열려요") : c.newtab && IS_MOBILE ? "새 탭으로 열려요 — 뒤로가기를 끝까지 누르거나 그 탭을 닫으면 돌아와요" : IS_MOBILE ? "핸드폰에서는 방송사 공식 페이지(새 창)로 열려요" : "이 채널은 방송사가 화면 안 재생을 막아 별도 창으로 열려요"}</div></a>`;
 }
 /* SBS·채널A·MBC: 화면 안 재생은 미리보기(로그인 필요)라서 → 화면 구석에 작게 [새창] */
 const WIN_LINK = /sbs\.co\.kr|ichannela\.com|imbc\.com/i;
@@ -856,6 +883,7 @@ $("player").addEventListener("click", e => {
     if (c && openPop(c)) { e.preventDefault(); const b = a.querySelector(".btn"), s2 = a.querySelector(".sub"); if (b) b.textContent = "▶ 창 다시 띄우기 ↗"; if (s2) s2.textContent = "화면 위에 별도 창으로 재생 중 — 다른 채널을 누르면 창이 닫혀요"; }
     return;
   }
+  if (a.hasAttribute("data-chrome")) { e.preventDefault(); e.stopPropagation(); goChrome(a.href); return; }   // 아이폰 사파리 JTBC → 크롬 앱
   if (a.hasAttribute("data-newtab")) {
     /* 진짜 새 탭으로 여는 채널(MBC 새창). 새 탭을 징검다리(back.html)로 먼저 연 뒤 방송사로 넘어감 →
        방송사에서 여러 화면을 본 뒤에도 뒤로가기를 끝까지 누르면 탭이 닫히거나 myway.kr로 돌아옴 */
