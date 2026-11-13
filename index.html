@@ -44,6 +44,9 @@
   .tap .ttl { font-size:17px; font-weight:800; }
   .tap .btn { background:var(--accent); padding:10px 20px; border-radius:999px; font-size:14px; font-weight:800; box-shadow:0 0 0 0 rgba(229,56,79,.6); animation:ring 1.6s infinite; }
   .tap .sub { font-size:11.5px; color:#aab2c8; }
+  /* 화면 구석의 작은 [새창] (SBS·채널A·MBC) — 눈에 띄지 않게 */
+  .winlink { position:absolute; top:5px; right:5px; z-index:3; padding:3px 8px; border-radius:999px; font-size:10.5px; font-weight:700; line-height:1.4; color:#fff; text-decoration:none; background:rgba(20,24,40,.42); opacity:.6; -webkit-tap-highlight-color:transparent; }
+  .winlink:hover, .winlink:active { opacity:1; background:rgba(20,24,40,.8); }
   .tap.start .arw { animation:none; font-size:40px; }
   @keyframes bob { 0%,100% { transform:translateY(0); } 50% { transform:translateY(9px); } }
   @keyframes ring { 0% { box-shadow:0 0 0 0 rgba(229,56,79,.6); } 70% { box-shadow:0 0 0 14px rgba(229,56,79,0); } 100% { box-shadow:0 0 0 0 rgba(229,56,79,0); } }
@@ -385,6 +388,16 @@ function popSpec(){
   const w = Math.max(520, Math.round(r.width)), h = Math.max(320, Math.round(r.height) - 66);   // 창 제목·주소줄 높이만큼 뺌
   return `popup=yes,left=${Math.round(ox + r.left)},top=${Math.round(oy + r.top)},width=${w},height=${h}`;
 }
+/* 화살표(별도 창) 안내 화면 */
+function tapHtml(c, popped){
+  return `<a class="tap" href="${esc(c.url)}" target="_blank" rel="noopener"${c.newtab ? ' data-newtab="1"' : ""}>
+        <div class="arw">👇</div>
+        <div class="ttl">${esc(c.name)}</div>
+        <div class="btn">${popped ? "▶ 창 다시 띄우기 ↗" : "▶ 눌러서 보기 ↗"}</div>
+        <div class="sub">${!IS_MOBILE ? (popped ? "화면 위에 별도 창으로 재생 중 — 다른 채널을 누르면 창이 닫혀요" : "누르면 화면 자리에 별도 창으로 열려요") : c.newtab && IS_MOBILE ? "새 탭으로 열려요 — 뒤로가기를 끝까지 누르거나 그 탭을 닫으면 돌아와요" : IS_MOBILE ? "핸드폰에서는 방송사 공식 페이지(새 창)로 열려요" : "이 채널은 방송사가 화면 안 재생을 막아 별도 창으로 열려요"}</div></a>`;
+}
+/* SBS·채널A·MBC: 화면 안 재생은 미리보기(로그인 필요)라서 → 화면 구석에 작게 [새창] */
+const WIN_LINK = /sbs\.co\.kr|ichannela\.com|imbc\.com/i;
 function openPop(c){
   try {
     if (pop && !pop.closed) { pop.location.href = c.url; try { pop.focus(); } catch(e) {} return true; }   // 열려 있는 창에서 채널만 바꿈
@@ -428,13 +441,9 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
   } else if (c.type === "link") {
     if (ext) {                  // 화살표로 클릭 유도 → 방송사 공식 페이지 별도 창
       const popped = !IS_MOBILE && !noAuto && openPop(c);   // PC: 채널을 누르면 화면 자리에 창이 바로 뜸
-      box.innerHTML = `<a class="tap" href="${esc(c.url)}" target="_blank" rel="noopener"${c.newtab ? ' data-newtab="1"' : ""}>
-        <div class="arw">👇</div>
-        <div class="ttl">${esc(c.name)}</div>
-        <div class="btn">${popped ? "▶ 창 다시 띄우기 ↗" : "▶ 눌러서 보기 ↗"}</div>
-        <div class="sub">${!IS_MOBILE ? (popped ? "화면 위에 별도 창으로 재생 중 — 다른 채널을 누르면 창이 닫혀요" : "누르면 화면 자리에 별도 창으로 열려요") : c.newtab && IS_MOBILE ? "새 탭으로 열려요 — 뒤로가기를 끝까지 누르거나 그 탭을 닫으면 돌아와요" : IS_MOBILE ? "핸드폰에서는 방송사 공식 페이지(새 창)로 열려요" : "이 채널은 방송사가 화면 안 재생을 막아 별도 창으로 열려요"}</div></a>`;
+      box.innerHTML = tapHtml(c, popped);
     } else {                    // PC: 지상파도 화면에서 바로 재생 (핸드폰은 SBS·채널A만) — SBS·채널A는 앱 확인창 차단(sandbox)
-      box.innerHTML = `<iframe src="${esc(c.url)}"${/sbs\.co\.kr|ichannela\.com/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""} referrerpolicy="no-referrer" allow="${/imbc\.com/i.test(c.url) ? "fullscreen" : "autoplay; encrypted-media; picture-in-picture; fullscreen"}" allowfullscreen></iframe>`;   // MBC는 allow를 fullscreen만 줘야 화면 안에서 나옴 (테스트로 확인)
+      box.innerHTML = `<iframe src="${esc(c.url)}"${/sbs\.co\.kr|ichannela\.com/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""} referrerpolicy="no-referrer" allow="${/imbc\.com/i.test(c.url) ? "fullscreen" : "autoplay; encrypted-media; picture-in-picture; fullscreen"}" allowfullscreen></iframe>${WIN_LINK.test(c.url) ? `<a class="winlink" href="${esc(c.url)}" target="_blank" rel="noopener" title="새 창에서 보기 (로그인해서 계속 볼 때)">새창 ↗</a>` : ""}`;   // MBC는 allow를 fullscreen만 줘야 화면 안에서 나옴 (테스트로 확인)
     }
   } else if (c.type === "hls") {
     box.innerHTML = `<video id="v" controls autoplay muted playsinline></video>`;
@@ -809,6 +818,20 @@ renderTabs(); renderGrid();
 const RET_KEY = "liveTvReturnV1";
 const NATIVE_OPEN = window.open.bind(window);   // 아래쪽에서 핸드폰용으로 window.open을 바꾸기 전의 원래 것 (진짜 새 탭)
 $("player").addEventListener("click", e => {
+  const wl = e.target.closest("a.winlink");
+  if (wl) {   // 작은 [새창]: PC는 화면 자리에 맞춘 창(화면 안 재생은 멈춤), 핸드폰·태블릿은 새 탭(징검다리 back.html → 뒤로가기로 복귀)
+    const c = CHANNELS.find(x => x.slug === curSlug); if (!c) return;
+    if (!IS_MOBILE) {
+      if (openPop(c)) { e.preventDefault(); $("stage").classList.remove("full"); $("player").innerHTML = tapHtml(c, true); }
+      return;   // 창이 막히면 원래대로 새 탭
+    }
+    e.preventDefault(); e.stopPropagation();
+    let via = wl.href;
+    try { const b = new URL("back.html", location.href); b.searchParams.set("u", wl.href); b.searchParams.set("t", Date.now()); via = b.href; } catch(err) {}
+    let w = null; try { w = NATIVE_OPEN(via, "_blank"); } catch(err) {}
+    if (!w) { try { (window.top || window).location.href = via; } catch(err) { location.href = via; } }
+    return;
+  }
   const a = e.target.closest("a.tap:not(.start)"); if (!a) return;
   if (!IS_MOBILE) {   // PC: 새 탭 대신 화면 자리에 맞춘 창으로 (막히면 원래대로 새 탭)
     const c = CHANNELS.find(x => x.slug === curSlug);
