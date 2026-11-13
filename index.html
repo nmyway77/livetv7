@@ -222,6 +222,11 @@ const IS_MOBILE = /Android|iPhone|iPad|iPod|Mobile|SamsungBrowser/i.test(navigat
   (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 /* 핸드폰만 판별 (태블릿·아이패드 제외) — KBS는 태블릿에서는 화면 안 재생이 되므로 핸드폰에서만 화살표 */
 const IS_PHONE = /iPhone|iPod/i.test(navigator.userAgent) || (/Android/i.test(navigator.userAgent) && /Mobile/i.test(navigator.userAgent));
+/* 핸드폰에서는 JTBC를 채널A 바로 뒤로 (태블릿·PC는 원래 순서 그대로) */
+if (IS_PHONE) { try {
+  const ji = CHANNELS.findIndex(c => c.slug === "jtbc");
+  if (ji >= 0) { const j = CHANNELS.splice(ji, 1)[0]; const ai = CHANNELS.findIndex(c => c.slug === "channela"); CHANNELS.splice(ai >= 0 ? ai + 1 : ji, 0, j); }
+} catch(e) {} }
 
 /* 좁은 화면이면 채널 목록을 화면 아래로, 넓으면 오른쪽으로 */
 const side = document.createElement("aside");
