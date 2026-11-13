@@ -331,7 +331,8 @@ const ARROW_SLUGS = ["arirang"];   // PC·핸드폰 모두 화살표(별도 창)
 const kbsFail = new Set();
 const kbsCode = c => { const m = c.type === "link" && !c.newwin && /onair\.kbs\.co\.kr/i.test(c.url) && c.url.match(/[?&]ch_code=([\w-]+)/); return m ? m[1] : ""; };
 /* stream: 방송사가 로그인 없이 내주는 고정 방송 주소가 있는 채널(TV조선) → PC·태블릿·핸드폰 모두 화면 안에서 바로 재생 */
-const kbsDirect = c => !kbsFail.has(c.slug) && (!!c.stream || (IS_PHONE && !!kbsCode(c)));
+/* KBS: 핸드폰뿐 아니라 태블릿·PC에서도 공식 화면 대신 화면 안에서 바로 재생 (TV조선과 같은 방식). 재생이 안 되는 채널만 예전처럼 공식 화면으로 되돌림 */
+const kbsDirect = c => !kbsFail.has(c.slug) && (!!c.stream || !!kbsCode(c));
 const KBS_SILENT = 'data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';   // 아이폰은 누른 순간 재생을 시작해야 소리를 허용 → 주소를 받는 동안 아주 짧은 무음을 먼저 틂
 function playKbs(c, noAuto){
   const box = $("player"), slug = c.slug;
@@ -339,7 +340,7 @@ function playKbs(c, noAuto){
   const v = $("v"); let started = false;
   const real = () => { const u = String(v.currentSrc || v.getAttribute("src") || ""); return !!u && u.indexOf("data:") !== 0; };
   const alive = () => curSlug === slug && v.isConnected;
-  const fail = () => { if (started || !alive()) return; kbsFail.add(slug); play(slug, true); };   // 안 되는 채널 → 화살표 안내로
+  const fail = () => { if (started || !alive()) return; kbsFail.add(slug); play(slug, IS_MOBILE ? true : !!noAuto); };   // 안 되는 채널 → 화살표 안내로
   if (!noAuto) { try { v.src = KBS_SILENT; const p0 = v.play(); if (p0 && p0.catch) p0.catch(() => {}); } catch(e) {} }
   v.addEventListener("playing", () => { if (real()) started = true; });
   v.addEventListener("error", () => { if (real()) fail(); });
