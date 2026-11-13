@@ -291,6 +291,8 @@ function inCat(c){
   return currentCat==="전체" ? true : currentCat==="즐겨찾기" ? favs.includes(c.slug) : c.cat===currentCat;
 }
 const MOB_INLINE = /sbs\.co\.kr|imbc\.com|ichannela\.com|jtbc\.co\.kr|sooplive\.co\.kr|tv\.garden|mlblive\.net/i;   // SBS·채널A·SOOP·TV Garden·MLB다시보기는 핸드폰에서도 화면 안에서 바로 재생
+/* 아이폰 JTBC: 카톡으로 열면 화면 안에서 나오지만 사파리 등에서는 화면 안 재생이 안 됨 → 카톡이 아닐 때만 화살표(방송사 공식 화면)로 */
+const JTBC_ARROW = /iPhone|iPod/i.test(navigator.userAgent) && !/KAKAOTALK/i.test(navigator.userAgent);
 const ARROW_SLUGS = ["arirang"];   // PC·핸드폰 모두 화살표(별도 창): 아리랑TV (MLB다시보기는 화면 안 재생으로 변경)
 /* 핸드폰 KBS: 공식 화면이 화면 안에 안 떠서 화살표(새 창)였던 채널 → 방송 주소를 받아 화면 안에서 바로 재생 (마이웨이 KBS 보이는 라디오와 같은 방식).
    주소를 못 받거나 재생이 안 되는 채널은 그때만 예전처럼 화살표로 되돌림. 태블릿·PC는 공식 화면이 화면 안에 잘 나오므로 그대로 */
@@ -343,7 +345,7 @@ function playKbs(c, noAuto){
     })
     .catch(fail);
 }
-const isExt = c => c.type === "link" && !kbsDirect(c) && (!!c.newwin || ARROW_SLUGS.includes(c.slug) || (IS_MOBILE && !MOB_INLINE.test(c.url) && !(!IS_PHONE && /kbs\.co\.kr/i.test(c.url))));   // 화살표(별도 창) 채널: 치지직·MBC·TV조선, 핸드폰 KBS 등
+const isExt = c => c.type === "link" && !kbsDirect(c) && (!!c.newwin || ARROW_SLUGS.includes(c.slug) || (JTBC_ARROW && /jtbc\.co\.kr/i.test(c.url)) || (IS_MOBILE && !MOB_INLINE.test(c.url) && !(!IS_PHONE && /kbs\.co\.kr/i.test(c.url))));   // 화살표(별도 창) 채널: 치지직·MBC·TV조선, 핸드폰 KBS 등
 function renderTabs(){
   document.body.classList.toggle("wide", WIDE_TABS.includes(currentCat));
   document.body.classList.toggle("ottmode", currentCat === "OTT");
