@@ -289,7 +289,47 @@ function inCat(c){
 }
 const MOB_INLINE = /sbs\.co\.kr|imbc\.com|ichannela\.com|sooplive\.co\.kr|tv\.garden|mlblive\.net/i;   // SBS·채널A·SOOP·TV Garden·MLB다시보기는 핸드폰에서도 화면 안에서 바로 재생
 const ARROW_SLUGS = ["arirang"];   // PC·핸드폰 모두 화살표(별도 창): 아리랑TV (MLB다시보기는 화면 안 재생으로 변경)
-const isExt = c => c.type === "link" && (!!c.newwin || ARROW_SLUGS.includes(c.slug) || (IS_MOBILE && !MOB_INLINE.test(c.url) && !(!IS_PHONE && /kbs\.co\.kr/i.test(c.url))));   // 화살표(별도 창) 채널: 치지직·MBC·TV조선, 핸드폰 KBS 등
+/* 핸드폰 KBS: 공식 화면이 화면 안에 안 떠서 화살표(새 창)였던 채널 → 방송 주소를 받아 화면 안에서 바로 재생 (마이웨이 KBS 보이는 라디오와 같은 방식).
+   주소를 못 받거나 재생이 안 되는 채널은 그때만 예전처럼 화살표로 되돌림. 태블릿·PC는 공식 화면이 화면 안에 잘 나오므로 그대로 */
+const kbsFail = new Set();
+const kbsCode = c => { const m = c.type === "link" && !c.newwin && /onair\.kbs\.co\.kr/i.test(c.url) && c.url.match(/[?&]ch_code=([\w-]+)/); return m ? m[1] : ""; };
+const kbsDirect = c => IS_PHONE && !kbsFail.has(c.slug) && !!kbsCode(c);
+const KBS_SILENT = 'data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';   // 아이폰은 누른 순간 재생을 시작해야 소리를 허용 → 주소를 받는 동안 아주 짧은 무음을 먼저 틂
+function playKbs(c, noAuto){
+  const box = $("player"), slug = c.slug;
+  box.innerHTML = `<video id="v" controls playsinline webkit-playsinline></video>`;
+  const v = $("v"); let started = false;
+  const real = () => { const u = String(v.currentSrc || v.getAttribute("src") || ""); return !!u && u.indexOf("data:") !== 0; };
+  const alive = () => curSlug === slug && v.isConnected;
+  const fail = () => { if (started || !alive()) return; kbsFail.add(slug); play(slug, true); };   // 안 되는 채널 → 화살표 안내로
+  if (!noAuto) { try { v.src = KBS_SILENT; const p0 = v.play(); if (p0 && p0.catch) p0.catch(() => {}); } catch(e) {} }
+  v.addEventListener("playing", () => { if (real()) started = true; });
+  v.addEventListener("error", () => { if (real()) fail(); });
+  fetch("https://cfpwwwapi.kbs.co.kr/api/v1/landing/live/channel_code/" + encodeURIComponent(kbsCode(c)), { cache:"no-store" })
+    .then(r => { if (!r.ok) throw new Error("http"); return r.json(); })
+    .then(async d => {
+      if (!alive()) return;
+      const items = ((d && d.channel_item) || []).filter(it => it && it.service_url);
+      const pick = items.find(it => /tv/i.test(String(it.media_type || ""))) || items.find(it => !/radio/i.test(String(it.media_type || ""))) || items[0];
+      if (!pick) { fail(); return; }
+      const url = String(pick.service_url).replace(/^http:/, "https:");
+      try { await loadHlsJs(); } catch(e) {}
+      if (!alive()) return;
+      if (window.Hls && Hls.isSupported()) {
+        hls = new Hls();
+        hls.on(Hls.Events.ERROR, (ev, e) => {
+          if (!e || !e.fatal) return;
+          if (!started) fail();
+          else if (e.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
+          else if (e.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+        });
+        hls.loadSource(url); hls.attachMedia(v);
+      } else { v.src = url; }
+      if (!noAuto) { const p = v.play(); if (p && p.catch) p.catch(() => {}); }
+    })
+    .catch(fail);
+}
+const isExt = c => c.type === "link" && !kbsDirect(c) && (!!c.newwin || ARROW_SLUGS.includes(c.slug) || (IS_MOBILE && !MOB_INLINE.test(c.url) && !(!IS_PHONE && /kbs\.co\.kr/i.test(c.url))));   // 화살표(별도 창) 채널: 치지직·MBC·TV조선, 핸드폰 KBS 등
 function renderTabs(){
   document.body.classList.toggle("wide", WIDE_TABS.includes(currentCat));
   document.body.classList.toggle("ottmode", currentCat === "OTT");
@@ -376,7 +416,10 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
   $("now").innerHTML = `▶ ${esc(c.name)}<small>${esc(c.cat)}</small>`;
   document.title = `${c.name} 실시간 - 실시간 TV`;
 
-  if (c.type === "youtube" || c.type === "youtube-live") {
+  if (kbsDirect(c)) {            // 핸드폰 KBS: 새 창 없이 화면 안에서 바로 재생
+    $("stage").classList.remove("full");
+    playKbs(c, noAuto);
+  } else if (c.type === "youtube" || c.type === "youtube-live") {
     const src = c.type === "youtube"
       ? `https://www.youtube.com/embed/${c.id}?autoplay=1&mute=1&playsinline=1`
       : `https://www.youtube.com/embed/live_stream?channel=${c.id}&autoplay=1&mute=1&playsinline=1`;
