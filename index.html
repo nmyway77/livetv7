@@ -383,10 +383,11 @@ function renderTabs(){
   document.body.classList.toggle("ottmode", currentCat === "OTT");
   document.body.classList.toggle("wdmode", currentCat === "웹드라마");
   const all = [...new Set(CHANNELS.map(c => c.cat))];
-  const cats = ["전체", "즐겨찾기", ...all.filter(c => c === "지상파"), ...all.filter(c => c !== "지상파")].filter(c => !HIDE_CATS.includes(c));   // 지상파를 뉴스보다 앞에
+  const FRONT = ["지상파", "뉴스"];   // 탭 순서: 지상파 → 뉴스 → 해외 → OTT → 나머지
+  const cats = ["전체", "즐겨찾기", ...FRONT.filter(c => all.includes(c)), ...all.filter(c => !FRONT.includes(c))].filter(c => !HIDE_CATS.includes(c));
   const btn = (cat, label) => `<button class="${cat===currentCat?'on':''}" data-cat="${esc(cat)}">${esc(label)}</button>`;
   const abroad = CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "";
-  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? abroad + btn("OTT", "OTT") : "") ).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
+  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "뉴스" ? abroad + btn("OTT", "OTT") : "") ).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("");
 }
 function showOtt(){
