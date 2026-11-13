@@ -490,7 +490,7 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
       const popped = !IS_MOBILE && !noAuto && openPop(c);   // PC: 채널을 누르면 화면 자리에 창이 바로 뜸
       box.innerHTML = tapHtml(c, popped);
     } else {                    // PC: 지상파도 화면에서 바로 재생 (핸드폰은 SBS·채널A만) — SBS·채널A는 앱 확인창 차단(sandbox)
-      box.innerHTML = `<iframe src="${esc(c.url)}"${/sbs\.co\.kr|ichannela\.com/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""} referrerpolicy="no-referrer" allow="${/imbc\.com/i.test(c.url) ? "fullscreen" : "autoplay; encrypted-media; picture-in-picture; fullscreen"}" allowfullscreen></iframe>${WIN_LINK.test(c.url) ? `<a class="winlink" href="${esc(c.url)}" target="_blank" rel="noopener" title="새 창에서 보기 (로그인해서 계속 볼 때)">새창 ↗</a>` : ""}`;   // MBC는 allow를 fullscreen만 줘야 화면 안에서 나옴 (테스트로 확인)
+      box.innerHTML = `<iframe src="${esc(c.url)}"${/sbs\.co\.kr|ichannela\.com/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""} referrerpolicy="no-referrer" allow="${/imbc\.com/i.test(c.url) ? "fullscreen" : (noAuto ? "" : "autoplay; ") + "encrypted-media; picture-in-picture; fullscreen"}" allowfullscreen></iframe>${WIN_LINK.test(c.url) ? `<a class="winlink" href="${esc(c.url)}" target="_blank" rel="noopener" title="새 창에서 보기 (로그인해서 계속 볼 때)">새창 ↗</a>` : ""}`;   // MBC는 allow를 fullscreen만 줘야 화면 안에서 나옴 (테스트로 확인)
     }
   } else if (c.type === "hls") {
     box.innerHTML = `<video id="v" controls autoplay muted playsinline></video>`;
@@ -917,11 +917,11 @@ else if (retSlug) play(retSlug);   // 화살표 채널로 나갔다가 백버튼
 else {
   /* 처음 열 때는 항상 정지 화면. 주소 끝에 남은 #채널(새로고침·뒤로가기 때 브라우저가 되살린 값)로는 자동 재생하지 않음 */
   try { history.replaceState(null, "", location.pathname + location.search); } catch(err) {}
-  /* 처음 화면: 지상파 첫 채널(KBS1)을 정지 상태로. 핸드폰은 화면 안 플레이어를 멈춘 채로, PC·태블릿은 방송사 공식 화면이 스스로 재생을 시작하므로 ▶ 정지 화면으로.
+  /* 처음 화면: 지상파 첫 채널(KBS1)의 정식 화면을 그대로 띄우되 재생만 안 함.
+     PC·태블릿은 방송사 공식 화면을 자동 재생 권한 없이 넣어 ▶가 보이는 정지 상태로, 핸드폰은 화면 안 플레이어를 멈춘 채로.
      그 뒤 탭·채널을 누르면 바로 자동 재생 */
   const f0 = CHANNELS.find(c => c.cat === "지상파") || CHANNELS.find(c => c.slug === "ytn") || CHANNELS[0];
-  if (kbsDirect(f0) || f0.type === "youtube" || f0.type === "youtube-live") play(f0.slug, true);
-  else showStart(f0.slug);
+  play(f0.slug, true);
 }   // 처음 연 사람: 자동 재생하지 않고 정지 화면(▶ 눌러서 보기) — 누르면 YTN, 다른 채널을 누르면 그 채널이 바로 재생
 </script>
 <script>
