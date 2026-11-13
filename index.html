@@ -210,7 +210,7 @@ const CHANNELS = (function(s,k){var b=atob(s),u=new Uint8Array(b.length);for(var
 const FAV_KEY = "liveTvFavs";
 let favs = [];
 try { favs = JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) {}
-let currentCat = "전체";
+let currentCat = "지상파";   // 처음 열면 지상파 탭부터
 let curSlug = "";
 let hls = null;
 
@@ -382,7 +382,8 @@ function renderTabs(){
   document.body.classList.toggle("wide", WIDE_TABS.includes(currentCat));
   document.body.classList.toggle("ottmode", currentCat === "OTT");
   document.body.classList.toggle("wdmode", currentCat === "웹드라마");
-  const cats = ["전체", "즐겨찾기", ...new Set(CHANNELS.map(c => c.cat))].filter(c => !HIDE_CATS.includes(c));
+  const all = [...new Set(CHANNELS.map(c => c.cat))];
+  const cats = ["전체", "즐겨찾기", ...all.filter(c => c === "지상파"), ...all.filter(c => c !== "지상파")].filter(c => !HIDE_CATS.includes(c));   // 지상파를 뉴스보다 앞에
   const btn = (cat, label) => `<button class="${cat===currentCat?'on':''}" data-cat="${esc(cat)}">${esc(label)}</button>`;
   const abroad = CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "";
   $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? abroad + btn("OTT", "OTT") : "") ).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
@@ -915,7 +916,11 @@ else if (retSlug) play(retSlug);   // 화살표 채널로 나갔다가 백버튼
 else {
   /* 처음 열 때는 항상 정지 화면. 주소 끝에 남은 #채널(새로고침·뒤로가기 때 브라우저가 되살린 값)로는 자동 재생하지 않음 */
   try { history.replaceState(null, "", location.pathname + location.search); } catch(err) {}
-  play("ytn", true);   // 처음 화면: 원래 YTN 유튜브 화면 그대로, 자동 재생만 안 함 (▶ 누르면 재생) — 탭·다른 채널을 누르면 바로 자동 재생
+  /* 처음 화면: 지상파 첫 채널(KBS1)을 정지 상태로. 핸드폰은 화면 안 플레이어를 멈춘 채로, PC·태블릿은 방송사 공식 화면이 스스로 재생을 시작하므로 ▶ 정지 화면으로.
+     그 뒤 탭·채널을 누르면 바로 자동 재생 */
+  const f0 = CHANNELS.find(c => c.cat === "지상파") || CHANNELS.find(c => c.slug === "ytn") || CHANNELS[0];
+  if (kbsDirect(f0) || f0.type === "youtube" || f0.type === "youtube-live") play(f0.slug, true);
+  else showStart(f0.slug);
 }   // 처음 연 사람: 자동 재생하지 않고 정지 화면(▶ 눌러서 보기) — 누르면 YTN, 다른 채널을 누르면 그 채널이 바로 재생
 </script>
 <script>
