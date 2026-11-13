@@ -264,7 +264,7 @@ window.addEventListener("message", e => {
 toParent({ type:"LIVETV_MARKS_GET" });
 
 /* 상단 탭: 스포츠·인터넷방송·지역·종교·키즈·라이프·캠 탭은 숨김 (채널은 '전체'에 그대로)
-   그 자리에 채널 바로가기 탭 [SOOP] [MLB다시보기] [치지직] → 누르면 그 채널 화면 바로, 맨 뒤 [해외] */
+   그 자리에 채널 바로가기 탭 [SOOP] [MLB다시보기] [치지직] → 누르면 그 채널 화면 바로. [해외]는 지상파 바로 오른쪽 */
 const HIDE_CATS = ["스포츠", "인터넷방송", "지역", "종교", "키즈", "라이프·캠", "해외"];
 const WIDE_TABS = ["@soop", "@mlb", "@tvgarden", "OTT", "웹드라마"];   // 이 탭은 채널 목록 없이 화면 전체 (SOOP·MLB다시보기·TV Garden·OTT)
 const DIRECT_TABS = [["SOOP", "soop"], ["MLB다시보기", "mlb"], ["치지직", "chzzk"], ["트위치", "twitch"], ["TV Garden", "tvgarden"]];
@@ -336,9 +336,9 @@ function renderTabs(){
   document.body.classList.toggle("wdmode", currentCat === "웹드라마");
   const cats = ["전체", "즐겨찾기", ...new Set(CHANNELS.map(c => c.cat))].filter(c => !HIDE_CATS.includes(c));
   const btn = (cat, label) => `<button class="${cat===currentCat?'on':''}" data-cat="${esc(cat)}">${esc(label)}</button>`;
-  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? btn("OTT", "OTT") : "") ).join("")   // OTT는 지상파 오른쪽
-    + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("")
-    + (CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "");
+  const abroad = CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "";
+  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? abroad + btn("OTT", "OTT") : "") ).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
+    + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("");
 }
 function showOtt(){
   stopAll(); closePop(); curSlug = "";
