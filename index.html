@@ -210,7 +210,7 @@ const CHANNELS = (function(s,k){var b=atob(s),u=new Uint8Array(b.length);for(var
 const FAV_KEY = "liveTvFavs";
 let favs = [];
 try { favs = JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) {}
-let currentCat = "지상파";   // 처음 열면 지상파 탭부터
+let currentCat = "뉴스";   // 처음 열면 뉴스 탭부터
 let curSlug = "";
 let hls = null;
 
@@ -383,11 +383,11 @@ function renderTabs(){
   document.body.classList.toggle("ottmode", currentCat === "OTT");
   document.body.classList.toggle("wdmode", currentCat === "웹드라마");
   const all = [...new Set(CHANNELS.map(c => c.cat))];
-  const FRONT = ["지상파", "뉴스"];   // 탭 순서: 지상파 → 뉴스 → 해외 → 나머지 (OTT는 예능·교양 뒤)
+  const FRONT = ["뉴스", "지상파"];   // 탭 순서: 뉴스 → 지상파 → 해외 → 나머지 (OTT는 예능·교양 뒤)
   const cats = ["전체", "즐겨찾기", ...FRONT.filter(c => all.includes(c)), ...all.filter(c => !FRONT.includes(c))].filter(c => !HIDE_CATS.includes(c));
   const btn = (cat, label) => `<button class="${cat===currentCat?'on':''}" data-cat="${esc(cat)}">${esc(label)}</button>`;
   const abroad = CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "";
-  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "뉴스" ? abroad : c === "예능·교양" ? btn("OTT", "OTT") : "") ).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
+  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? abroad : c === "예능·교양" ? btn("OTT", "OTT") : "") ).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("");
 }
 function showOtt(){
@@ -917,10 +917,10 @@ else if (retSlug) play(retSlug);   // 화살표 채널로 나갔다가 백버튼
 else {
   /* 처음 열 때는 항상 정지 화면. 주소 끝에 남은 #채널(새로고침·뒤로가기 때 브라우저가 되살린 값)로는 자동 재생하지 않음 */
   try { history.replaceState(null, "", location.pathname + location.search); } catch(err) {}
-  /* 처음 화면: 지상파 첫 채널(KBS1)의 정식 화면을 그대로 띄우되 재생만 안 함.
+  /* 처음 화면: 뉴스 첫 채널(YTN)을 그대로 띄우되 재생만 안 함 (유튜브 화면 그대로, ▶ 누르면 재생).
      PC·태블릿은 방송사 공식 화면을 자동 재생 권한 없이 넣어 ▶가 보이는 정지 상태로, 핸드폰은 화면 안 플레이어를 멈춘 채로.
      그 뒤 탭·채널을 누르면 바로 자동 재생 */
-  const f0 = CHANNELS.find(c => c.cat === "지상파") || CHANNELS.find(c => c.slug === "ytn") || CHANNELS[0];
+  const f0 = CHANNELS.find(c => c.cat === "뉴스") || CHANNELS[0];   // 뉴스 첫 채널(YTN)
   play(f0.slug, true);
 }   // 처음 연 사람: 자동 재생하지 않고 정지 화면(▶ 눌러서 보기) — 누르면 YTN, 다른 채널을 누르면 그 채널이 바로 재생
 </script>
