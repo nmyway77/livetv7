@@ -22,6 +22,11 @@
   .tabs button { flex:none; border:1px solid var(--line); background:var(--card); padding:7px 16px; border-radius:20px; cursor:pointer; font-size:14px; font-weight:600; color:var(--text); white-space:nowrap; }
   .tabs button:hover { border-color:#b9bfcc; }
   .tabs button.on { background:var(--text); color:#fff; border-color:var(--text); }
+  /* myway.kr 탭바 자리에 들어갔을 때(?nav=1): 맨 앞 [← 메뉴] — 좌우로 밀어도 왼쪽에 고정 */
+  .tabs > .nav-back { display:none; }
+  body.navswap .tabs > .nav-back { display:inline-flex; align-items:center; gap:5px; margin-left:0; position:sticky; left:0; z-index:2; color:#5b4bdb; font-weight:800; box-shadow:-16px 0 0 var(--card); }
+  body.navswap .tabs > .nav-back svg { width:14px; height:14px; display:block; }
+  body.navswap .tabs > .nav-back + button { margin-left:auto; }
 
   /* 본문: 좌 화면 + 우 채널 */
   .top { height:100%; }
@@ -196,6 +201,13 @@
 <body>
 <div class="top">
   <nav class="tabs" id="tabs"></nav>
+  <script>
+  (function(){
+    var emb = true; try { emb = window.self !== window.top; } catch(e) {}
+    if (emb && /[?&]nav=1(&|$)/.test(location.search)) document.body.classList.add("navswap");
+    window.addEventListener("message", function(e){ if (e.origin === "https://myway.kr" && e.data && e.data.type === "MYWAY_NAVSWAP_OFF") document.body.classList.remove("navswap"); });
+  })();
+  </script>
   <div class="wrap" id="wrap">
     <section class="stage" id="stage">
       <div class="player" id="player"><div class="empty">오른쪽에서 채널을 선택하세요</div></div>
@@ -388,7 +400,7 @@ function renderTabs(){
   const cats = ["전체", "즐겨찾기", ...FRONT.filter(c => all.includes(c)), ...all.filter(c => !FRONT.includes(c))].filter(c => !HIDE_CATS.includes(c));
   const btn = (cat, label) => `<button class="${cat===currentCat?'on':''}" data-cat="${esc(cat)}">${esc(label)}</button>`;
   const abroad = CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "";
-  $("tabs").innerHTML = cats.map(c => btn(c, c) + (c === "지상파" ? abroad : c === "예능·교양" ? btn("OTT", "OTT") : "") ).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
+  $("tabs").innerHTML = '<button type="button" class="nav-back" data-back="1" title="마이웨이 메뉴로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>메뉴</button>' + cats.map(c => btn(c, c) + (c === "지상파" ? abroad : c === "예능·교양" ? btn("OTT", "OTT") : "") ).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("");
 }
 function showOtt(){
@@ -519,6 +531,7 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
 // 이벤트
 $("tabs").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.back) { try { parent.postMessage({ type: "MYWAY_NAVSWAP_BACK" }, "https://myway.kr"); } catch(err) {} return; }   // myway.kr 탭바 다시 보이기
   currentCat = b.dataset.cat; renderTabs(); renderGrid();
   $("grid").scrollTop = 0; side.scrollTop = 0;
   if (currentCat === "OTT") { try { history.replaceState(null, "", location.pathname + location.search); } catch(err) {} showOtt(); return; }
