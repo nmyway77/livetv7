@@ -402,7 +402,17 @@ function renderTabs(){
   const abroad = CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "";
   $("tabs").innerHTML = '<button type="button" class="nav-back" data-back="1" title="마이웨이 메뉴로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>메뉴</button>' + cats.map(c => btn(c, c) + (c === "지상파" ? abroad : c === "예능·교양" ? btn("OTT", "OTT") : "") ).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("");
+  centerTab();
 }
+// 누른 탭을 탭바 가운데로 좌우 이동 → 양옆의 다음 탭을 누르기 쉽게
+function centerTab(){
+  requestAnimationFrame(() => {
+    const tb = $("tabs"), t = tb && tb.querySelector("button.on"); if (!t) return;
+    const left = Math.max(0, t.offsetLeft - (tb.clientWidth - t.offsetWidth) / 2);
+    try { tb.scrollTo({ left: left, behavior: "smooth" }); } catch(e) { tb.scrollLeft = left; }
+  });
+}
+
 function showOtt(){
   stopAll(); closePop(); curSlug = "";
   $("stage").classList.add("full");
