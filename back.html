@@ -22,7 +22,7 @@
 (function(){
   var HOME = 'https://myway.kr/';
   var q = new URLSearchParams(location.search), u = q.get('u') || '', KEY = 'liveTvBack_' + (q.get('t') || '0');
-  var ALLOW = /(^|\.)(imbc\.com|kbs\.co\.kr|sbs\.co\.kr|ichannela\.com|tvchosun\.com|jtbc\.co\.kr|mbn\.co\.kr|naver\.com|youtube\.com)$/i;
+  var ALLOW = /(^|\.)(imbc\.com|kbs\.co\.kr|sbs\.co\.kr|ichannela\.com|tvchosun\.com|jtbc\.co\.kr|mbn\.co\.kr|naver\.com|youtube\.com|twitch\.tv|sooplive\.co\.kr)$/i;
   function target(){
     try { var x = new URL(u); if (!/^https?:$/.test(x.protocol)) return ''; return (ALLOW.test(x.hostname) || x.hostname === location.hostname) ? x.href : ''; } catch(e){ return ''; }
   }
