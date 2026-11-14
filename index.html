@@ -495,6 +495,7 @@ function stopAll(){
   if (v) { v.pause(); v.removeAttribute("src"); v.load(); }
 }
 
+const IS_IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그대로 띄우고 재생만 안 함
   const c = CHANNELS.find(x => x.slug === slug);
   if (!c) return;
@@ -511,10 +512,11 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
     $("stage").classList.remove("full");
     playKbs(c, noAuto);
   } else if (c.type === "youtube" || c.type === "youtube-live") {
-    const src = c.type === "youtube"
-      ? `https://www.youtube.com/embed/${c.id}?autoplay=1&mute=1&playsinline=1`
-      : `https://www.youtube.com/embed/live_stream?channel=${c.id}&autoplay=1&mute=1&playsinline=1`;
-    const src2 = noAuto ? src.replace("autoplay=1&mute=1&", "autoplay=0&") : src;
+    // 채널을 누르면 소리까지 바로 나오게 (음소거 없이 재생). 아이폰·아이패드는 소리 켠 자동재생을 브라우저가 막아 영상이 멈추므로 음소거로 시작
+    const q = noAuto ? "autoplay=0" : (IS_IOS ? "autoplay=1&mute=1" : "autoplay=1&mute=0");
+    const src2 = c.type === "youtube"
+      ? `https://www.youtube.com/embed/${c.id}?${q}&playsinline=1`
+      : `https://www.youtube.com/embed/live_stream?channel=${c.id}&${q}&playsinline=1`;
     box.innerHTML = `<iframe src="${src2}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
   } else if (c.type === "link") {
     if (ext) {                  // 화살표로 클릭 유도 → 방송사 공식 페이지 별도 창
@@ -526,6 +528,10 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
   } else if (c.type === "hls") {
     box.innerHTML = `<video id="v" controls autoplay muted playsinline></video>`;
     const v = $("v");
+    if (!IS_IOS && !noAuto) {   // 소리 켠 채로 재생 시도 — 브라우저가 막으면 음소거로 재생
+      v.muted = false;
+      v.addEventListener("canplay", () => { const p = v.play(); if (p && p.catch) p.catch(() => { v.muted = true; const p2 = v.play(); if (p2 && p2.catch) p2.catch(() => {}); }); }, { once:true });
+    }
     try { await loadHlsJs(); } catch(e) {}
     if (c.slug !== curSlug) return;                         // 그 사이 다른 채널을 눌렀으면 중단
     if (window.Hls && Hls.isSupported()) {                 // 크롬·엣지·안드로이드: hls.js
