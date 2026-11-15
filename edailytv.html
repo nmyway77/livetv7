@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>이데일리TV LIVE</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden}
+#wrap{position:absolute;left:50%;top:50%;width:768px;height:434px;overflow:hidden;transform-origin:0 0}
+#wrap iframe{position:absolute;left:-167px;top:-278px;width:1536px;height:1400px;border:0}
+.nw{position:fixed;right:8px;bottom:6px;font:12px/1 sans-serif;color:rgba(255,255,255,.45);text-decoration:none;z-index:2}
+.nw:hover{color:#fff}
+</style></head><body>
+<div id="wrap"><iframe src="https://tv.edaily.co.kr/index.html" scrolling="no" referrerpolicy="no-referrer" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>
+<a class="nw" href="https://tv.edaily.co.kr/index.html" target="_blank" rel="noopener">공식 화면 ↗</a>
+<script>
+(function(){var w=document.getElementById('wrap'),W=768,H=434;
+function fit(){var s=Math.min(innerWidth/W,innerHeight/H);w.style.transform='scale('+s+') translate(-50%,-50%)';}
+addEventListener('resize',fit);fit();})();
+</script>
+</body></html>
