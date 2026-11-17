@@ -431,7 +431,7 @@ function renderTabs(){
   const LEAD = ["지상파", "뉴스"];   // 맨 앞 두 탭(색을 달리함) → 그다음 방송사별 KBS·SBS·EBS → 해외·미국방송 → 나머지
   const btn = (cat, label, cls) => `<button class="${(cls ? cls + ' ' : '') + (cat===currentCat?'on':'')}" data-cat="${esc(cat)}">${esc(label)}</button>`;
   const abroad = CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "";
-  $("tabs").innerHTML = '<button type="button" class="nav-back" data-back="1" title="마이웨이 메뉴로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>메뉴</button>' + btn("@kbstv", "KBS") + btn("@chosuntv", "TV조선") + btn("@arirangtv", "아리랑TV") + btn("@ebstv", "EBS") + btn("@ytntv", "YTN") + btn("@yonhaptv", "연합뉴스") + btn("@econtv", "경제TV") + btn("@shoptv", "홈쇼핑") + one("jtbc", "JTBC") + one("channela", "채널A") + one("mbc", "MBC") + btn("@sbstv", "SBS") + abroad + btn("@ustv", "미국방송") + cats.filter(c => !LEAD.includes(c) && !DROP_TABS.includes(c)).map(c => btn(c, c)).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
+  $("tabs").innerHTML = '<button type="button" class="nav-back" data-back="1" title="마이웨이 메뉴로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>메뉴</button>' + (IN_FRAME ? '<button type="button" class="lead" data-go="radio" title="라디오 화면으로 바로 가기">📻 라디오</button>' : '') + btn("@kbstv", "KBS") + btn("@chosuntv", "TV조선") + btn("@arirangtv", "아리랑TV") + btn("@ebstv", "EBS") + btn("@ytntv", "YTN") + btn("@yonhaptv", "연합뉴스") + btn("@econtv", "경제TV") + btn("@shoptv", "홈쇼핑") + one("jtbc", "JTBC") + one("channela", "채널A") + one("mbc", "MBC") + btn("@sbstv", "SBS") + abroad + btn("@ustv", "미국방송") + cats.filter(c => !LEAD.includes(c) && !DROP_TABS.includes(c)).map(c => btn(c, c)).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("");
   centerTab();
 }
@@ -597,6 +597,7 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
 // 이벤트
 $("tabs").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.go) { try { parent.postMessage({ type: "MYWAY_GO_PAGE", page: b.dataset.go }, "https://myway.kr"); } catch(err) {} return; }   // [📻 라디오] → myway.kr이 라디오 화면으로 바로 전환
   if (b.dataset.back) { try { parent.postMessage({ type: "MYWAY_NAVSWAP_BACK" }, "https://myway.kr"); } catch(err) {} return; }   // myway.kr 탭바 다시 보이기
   currentCat = b.dataset.cat; renderTabs(); renderGrid();
   $("grid").scrollTop = 0; side.scrollTop = 0;
