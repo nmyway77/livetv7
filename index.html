@@ -239,7 +239,7 @@ CHANNELS.push({ slug: "ustv", name: "미국방송", cat: "미국방송", type: "
 const FAV_KEY = "liveTvFavs";
 let favs = [];
 try { favs = JSON.parse(localStorage.getItem(FAV_KEY)) || []; } catch(e) {}
-let currentCat = "뉴스";   // 처음 열면 뉴스 탭부터
+let currentCat = "지상파";   // 처음 열면 지상파 탭부터 (KBS 화면)
 let curSlug = "";
 let hls = null;
 
@@ -985,8 +985,9 @@ else {
   /* 처음 화면: 뉴스 첫 채널(YTN)을 그대로 띄우되 재생만 안 함 (유튜브 화면 그대로, ▶ 누르면 재생).
      PC·태블릿은 방송사 공식 화면을 자동 재생 권한 없이 넣어 ▶가 보이는 정지 상태로, 핸드폰은 화면 안 플레이어를 멈춘 채로.
      그 뒤 탭·채널을 누르면 바로 자동 재생 */
-  const f0 = CHANNELS.find(c => c.cat === "뉴스") || CHANNELS[0];   // 뉴스 첫 채널(YTN)
-  play(f0.slug, true);
+  /* → 변경: TV를 열면 [지상파]의 KBS 화면(방송사별 TV)이 먼저 뜨고 1TV가 바로 열림. 브라우저가 소리 있는 자동 재생을 막으면 소리를 끈 채 화면부터 나옴 */
+  const f0 = CHANNELS.find(c => c.slug === "kbstv") || CHANNELS.find(c => c.cat === "지상파") || CHANNELS[0];
+  play(f0.slug);
 }   // 처음 연 사람: 자동 재생하지 않고 정지 화면(▶ 눌러서 보기) — 누르면 YTN, 다른 채널을 누르면 그 채널이 바로 재생
 </script>
 <script>
