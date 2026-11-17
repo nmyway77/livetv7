@@ -239,6 +239,9 @@ CHANNELS.push({ slug: "sbstv", name: "SBS", cat: "방송사SBS", type: "link", u
 CHANNELS.push({ slug: "ebstv", name: "EBS", cat: "방송사EBS", type: "link", url: "https://myway.kr/tv-ebs.html?auto=1" });
 CHANNELS.push({ slug: "ytntv", name: "YTN", cat: "방송사YTN", type: "link", url: "https://myway.kr/tv-ytn.html?auto=1" });
 CHANNELS.push({ slug: "yonhaptv", name: "연합뉴스", cat: "방송사연합", type: "link", url: "https://myway.kr/tv-yonhap.html?auto=1" });
+CHANNELS.push({ slug: "chosuntv", name: "TV조선", cat: "방송사조선", type: "link", url: "https://myway.kr/tv-chosun.html?auto=1" });
+CHANNELS.push({ slug: "arirangtv", name: "아리랑TV", cat: "방송사아리랑", type: "link", url: "https://myway.kr/tv-arirang.html?auto=1" });   // TV + 라디오
+CHANNELS.push({ slug: "shoptv", name: "홈쇼핑", cat: "방송사홈쇼핑", type: "link", url: "https://myway.kr/tv-shop.html?auto=1" });
 CHANNELS.push({ slug: "econtv", name: "경제TV", cat: "방송사경제", type: "link", url: "https://myway.kr/tv-econ.html?auto=1" });   // 한국경제TV·매일경제TV·이데일리TV·서울경제TV
 CHANNELS.push({ slug: "ustv", name: "미국방송", cat: "미국방송", type: "link", url: "https://myway.kr/us-tv.html" });   // 미국 TV 채널 모음(myway.kr/us-tv.html) — [해외] 오른쪽 탭으로 화면 전체
 
@@ -308,8 +311,8 @@ toParent({ type:"LIVETV_MARKS_GET" });
 
 /* 상단 탭: 스포츠·인터넷방송·지역·종교·키즈·라이프·캠 탭은 숨김 (채널은 '전체'에 그대로)
    그 자리에 채널 바로가기 탭 [SOOP] [MLB다시보기] [치지직] → 누르면 그 채널 화면 바로. [해외]는 지상파 바로 오른쪽 */
-const HIDE_CATS = ["스포츠", "인터넷방송", "지역", "종교", "키즈", "라이프·캠", "해외", "미국방송", "방송사KBS", "방송사SBS", "방송사EBS", "방송사YTN", "방송사연합", "방송사경제"];
-const WIDE_TABS = ["@soop", "@mlb", "@tvgarden", "@ustv", "@kbstv", "@sbstv", "@ebstv", "@ytntv", "@yonhaptv", "@econtv", "@tvchosun", "@arirang", "@jtbc", "@channela", "@mbc", "웹드라마"];   // 이 탭은 채널 목록 없이 화면 전체 (SOOP·MLB다시보기·TV Garden·OTT)
+const HIDE_CATS = ["스포츠", "인터넷방송", "지역", "종교", "키즈", "라이프·캠", "해외", "미국방송", "방송사KBS", "방송사SBS", "방송사EBS", "방송사YTN", "방송사연합", "방송사경제", "방송사조선", "방송사아리랑", "방송사홈쇼핑"];
+const WIDE_TABS = ["@soop", "@mlb", "@tvgarden", "@ustv", "@kbstv", "@sbstv", "@ebstv", "@ytntv", "@yonhaptv", "@econtv", "@chosuntv", "@arirangtv", "@shoptv", "@tvchosun", "@arirang", "@jtbc", "@channela", "@mbc", "웹드라마"];   // 이 탭은 채널 목록 없이 화면 전체 (SOOP·MLB다시보기·TV Garden·OTT)
 const DIRECT_TABS = [["SOOP", "soop"], ["MLB다시보기", "mlb"], ["치지직", "chzzk"], ["트위치", "twitch"], ["TV Garden", "tvgarden"]];
 /* OTT 탭: 누르면 화면에 OTT 바로가기 타일 → 각 타일은 새 창으로 열림 */
 const OTT_LIST = [
@@ -428,7 +431,7 @@ function renderTabs(){
   const LEAD = ["지상파", "뉴스"];   // 맨 앞 두 탭(색을 달리함) → 그다음 방송사별 KBS·SBS·EBS → 해외·미국방송 → 나머지
   const btn = (cat, label, cls) => `<button class="${(cls ? cls + ' ' : '') + (cat===currentCat?'on':'')}" data-cat="${esc(cat)}">${esc(label)}</button>`;
   const abroad = CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "";
-  $("tabs").innerHTML = '<button type="button" class="nav-back" data-back="1" title="마이웨이 메뉴로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>메뉴</button>' + btn("@kbstv", "KBS") + one("tvchosun", "TV조선") + one("arirang", "아리랑TV") + btn("@ebstv", "EBS") + btn("@ytntv", "YTN") + btn("@yonhaptv", "연합뉴스") + btn("@econtv", "경제TV") + (all.includes("홈쇼핑") ? btn("홈쇼핑", "홈쇼핑") : "") + one("jtbc", "JTBC") + one("channela", "채널A") + one("mbc", "MBC") + btn("@sbstv", "SBS") + abroad + btn("@ustv", "미국방송") + cats.filter(c => !LEAD.includes(c) && !DROP_TABS.includes(c)).map(c => btn(c, c)).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
+  $("tabs").innerHTML = '<button type="button" class="nav-back" data-back="1" title="마이웨이 메뉴로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>메뉴</button>' + btn("@kbstv", "KBS") + btn("@chosuntv", "TV조선") + btn("@arirangtv", "아리랑TV") + btn("@ebstv", "EBS") + btn("@ytntv", "YTN") + btn("@yonhaptv", "연합뉴스") + btn("@econtv", "경제TV") + btn("@shoptv", "홈쇼핑") + one("jtbc", "JTBC") + one("channela", "채널A") + one("mbc", "MBC") + btn("@sbstv", "SBS") + abroad + btn("@ustv", "미국방송") + cats.filter(c => !LEAD.includes(c) && !DROP_TABS.includes(c)).map(c => btn(c, c)).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("");
   centerTab();
 }
