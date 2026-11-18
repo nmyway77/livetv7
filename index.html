@@ -315,7 +315,7 @@ toParent({ type:"LIVETV_MARKS_GET" });
    그 자리에 채널 바로가기 탭 [SOOP] [MLB다시보기] [치지직] → 누르면 그 채널 화면 바로. [해외]는 지상파 바로 오른쪽 */
 const HIDE_CATS = ["스포츠", "인터넷방송", "지역", "종교", "키즈", "라이프·캠", "해외", "미국방송", "방송사KBS", "방송사SBS", "방송사EBS", "방송사YTN", "방송사연합", "방송사경제", "방송사조선", "방송사아리랑", "방송사불교", "방송사홈쇼핑", "방송사링크"];
 const WIDE_TABS = ["@soop", "@mlb", "@tvgarden", "@ustv", "@kbstv", "@sbstv", "@ebstv", "@ytntv", "@yonhaptv", "@econtv", "@chosuntv", "@arirangtv", "@btntv", "@shoptv", "@tvchosun", "@arirang", "@jtbc", "@channela", "@mbc", "@linktv", "웹드라마"];   // 이 탭은 채널 목록 없이 화면 전체 (SOOP·MLB다시보기·TV Garden·OTT)
-const DIRECT_TABS = [["SOOP", "soop"], ["MLB다시보기", "mlb"], ["치지직", "chzzk"], ["트위치", "twitch"], ["TV Garden", "tvgarden"]];
+const DIRECT_TABS = [];   /* SOOP·MLB다시보기·치지직·트위치·TV Garden 바로가기 탭은 네비에서 빼고 링크TV(myway.kr/tv-link.html) 맨 위 줄로 옮김 */
 /* OTT 탭: 누르면 화면에 OTT 바로가기 타일 → 각 타일은 새 창으로 열림 */
 const OTT_LIST = [
   ["넷플릭스", "netflix.com", "https://www.netflix.com/kr/", "N", "#e50914,#8b0610"],
