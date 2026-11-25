@@ -273,7 +273,37 @@ const side = document.createElement("aside");
 side.className = "side";
 side.innerHTML = `<div class="list" id="grid"></div>
   <footer class="notice">ⓘ 방송사가 인터넷에 공개한 <b>공식 스트림·공식 유튜브 채널</b>을 연결해 보여 주는 <b>비영리 개인 사이트</b>입니다. 영상을 저장·재송출하지 않으며 광고·회원가입·수익 활동이 없습니다.
-  <b>방송사·권리자의 요청이 있으면 해당 채널을 즉시 삭제합니다.</b> 문의는 <a href="https://myway.kr/contact.html?from=tv" target="_blank" rel="noopener">문의하기</a>로 보내 주세요.</footer>`;
+  <b>방송사·권리자의 요청이 있으면 해당 채널을 즉시 삭제합니다.</b> 문의는 <a href="https://myway.kr/contact.html?from=tv" target="_blank" rel="noopener" id="ctLink">문의하기</a>로 보내 주세요.</footer>`;
+/* 문의하기: 새 탭 대신 그 자리에 작은 창으로 */
+(function(){
+  var ct = null;
+  function close(){ if (!ct) return; ct.dim.remove(); ct = null; }
+  function place(){ if (!ct) return; ct.box.style.width = Math.min(390, innerWidth - 16) + "px"; ct.box.style.height = Math.min(ct.h, innerHeight - 16) + "px"; }
+  function open(){
+    close();
+    var dim = document.createElement("div");
+    dim.style.cssText = "position:fixed;inset:0;z-index:99990;background:rgba(30,28,60,.38);display:flex;align-items:center;justify-content:center";
+    var box = document.createElement("div");
+    box.style.cssText = "background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 24px 60px -16px rgba(40,30,110,.55),0 2px 10px rgba(40,40,80,.18)";
+    var f = document.createElement("iframe"); f.title = "문의하기"; f.style.cssText = "display:block;width:100%;height:100%;border:0;background:#fff";
+    f.src = "https://myway.kr/contact.html?embed=1&from=tv";
+    box.appendChild(f); dim.appendChild(box); document.body.appendChild(dim);
+    ct = { dim: dim, box: box, f: f, h: 500 };
+    dim.addEventListener("click", function(e){ if (e.target === dim) close(); });
+    place();
+  }
+  addEventListener("message", function(e){
+    if (!ct || e.source !== ct.f.contentWindow || e.origin !== "https://myway.kr" || !e.data) return;
+    if (e.data.type === "MW_CONTACT_CLOSE") close();
+    else if (e.data.type === "MW_CONTACT_H" && e.data.h > 100) { ct.h = Math.min(700, e.data.h); place(); }
+  });
+  addEventListener("resize", place);
+  addEventListener("keydown", function(e){ if (e.key === "Escape") close(); });
+  document.addEventListener("click", function(e){
+    var a = e.target.closest && e.target.closest("#ctLink"); if (!a || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    e.preventDefault(); open();
+  });
+})();
 function placeSide(){
   const narrow = window.matchMedia("(max-width: 760px)").matches;
   if (narrow) { if (side.parentNode !== document.body) document.body.appendChild(side); }
