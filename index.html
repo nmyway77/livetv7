@@ -567,7 +567,21 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
       const popped = !IS_MOBILE && !noAuto && (TAB_CH(c) ? (closePop(), openTab(c.url)) : openPop(c));   // PC: 채널을 누르면 화면 자리에 창이 바로 뜸
       box.innerHTML = tapHtml(c, popped);
     } else {                    // PC: 지상파도 화면에서 바로 재생 (핸드폰은 SBS·채널A만) — SBS·채널A는 앱 확인창 차단(sandbox)
-      box.innerHTML = `<iframe src="${esc(c.url + (mini ? "&mini=1" : ""))}"${/sbs\.co\.kr|ichannela\.com/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""}${/myway\.kr\//i.test(c.url) ? "" : ' referrerpolicy="no-referrer"'} allow="${/imbc\.com/i.test(c.url) ? "fullscreen" : (noAuto ? "" : "autoplay; ") + "encrypted-media; picture-in-picture; fullscreen"}" allowfullscreen></iframe>${WIN_LINK.test(c.url) ? `<a class="winlink" href="${esc(c.url)}" target="_blank" rel="noopener" title="새 창에서 보기 (로그인해서 계속 볼 때)">새창 ↗</a>` : ""}`;   // MBC는 allow를 fullscreen만 줘야 화면 안에서 나옴 (테스트로 확인)
+      /* YTN·연합뉴스·경제TV(유튜브 채널 화면)끼리 탭을 바꿀 때: 화면을 새로 열지 않고 안쪽 화면이 그 방송사로 바뀌게 부탁
+         → 유튜브 플레이어가 그대로라 한 번 켠 소리가 계속 켜져 있음(아이폰). 안쪽이 못 바꾸면 예전처럼 새로 엶 */
+      const tvp = (c.url.match(/^https:\/\/myway\.kr\/(tv-(?:ytn|yonhap|econ)\.html)/) || [])[1] || "";
+      const oldFr = box.querySelector("iframe[data-tvp]");
+      const build = () => {
+        box.innerHTML = `<iframe src="${esc(c.url + (mini ? "&mini=1" : ""))}"${/sbs\.co\.kr|ichannela\.com/i.test(c.url) ? ' sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation"' : ""}${/myway\.kr\//i.test(c.url) ? "" : ' referrerpolicy="no-referrer"'} allow="${/imbc\.com/i.test(c.url) ? "fullscreen" : (noAuto ? "" : "autoplay; ") + "encrypted-media; picture-in-picture; fullscreen"}" allowfullscreen></iframe>${WIN_LINK.test(c.url) ? `<a class="winlink" href="${esc(c.url)}" target="_blank" rel="noopener" title="새 창에서 보기 (로그인해서 계속 볼 때)">새창 ↗</a>` : ""}`;   // MBC는 allow를 fullscreen만 줘야 화면 안에서 나옴 (테스트로 확인)
+        const nf = box.querySelector("iframe"); if (nf && tvp) nf.dataset.tvp = tvp; };
+      if (tvp && oldFr && oldFr.dataset.tvp !== tvp && !noAuto && oldFr.contentWindow) {
+        const cw = oldFr.contentWindow; let done = false;
+        const fin = ok => { if (done) return; done = true; window.removeEventListener("message", on); if (ok) oldFr.dataset.tvp = tvp; else if (c.slug === curSlug) build(); };
+        const on = e => { const d = e.data || {}; if (e.source === cw && e.origin === "https://myway.kr" && d.type === "MW_TV_SWITCH_R" && d.page === tvp) fin(!!d.ok); };
+        window.addEventListener("message", on);
+        try { cw.postMessage({ type: "MW_TV_SWITCH", page: tvp }, "https://myway.kr"); } catch(err) { fin(false); }
+        setTimeout(() => fin(false), 700);
+      } else build();
     }
   } else if (c.type === "hls") {
     box.innerHTML = `<video id="v" controls autoplay muted playsinline></video>`;
