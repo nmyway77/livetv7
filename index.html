@@ -273,7 +273,7 @@ const side = document.createElement("aside");
 side.className = "side";
 side.innerHTML = `<div class="list" id="grid"></div>
   <footer class="notice">ⓘ 방송사가 인터넷에 공개한 <b>공식 스트림·공식 유튜브 채널</b>을 연결해 보여 주는 <b>비영리 개인 사이트</b>입니다. 영상을 저장·재송출하지 않으며 광고·회원가입·수익 활동이 없습니다.
-  <b>방송사·권리자의 요청이 있으면 해당 채널을 즉시 삭제합니다.</b> 요청은 <a href="https://github.com/nmyway77/livetv7/issues" target="_blank" rel="noopener">여기(GitHub 이슈)</a>로 남겨 주세요.</footer>`;
+  <b>방송사·권리자의 요청이 있으면 해당 채널을 즉시 삭제합니다.</b> 요청은 <a href="mailto:nmyway@naver.com?subject=%5BMYWAY.KR%5D%20%EB%B0%A9%EC%86%A1%20%EC%B1%84%EB%84%90%20%EC%9A%94%EC%B2%AD">메일(nmyway@naver.com)</a>로 보내 주세요.</footer>`;
 function placeSide(){
   const narrow = window.matchMedia("(max-width: 760px)").matches;
   if (narrow) { if (side.parentNode !== document.body) document.body.appendChild(side); }
