@@ -211,6 +211,12 @@
   .tabs button.lead:hover{color:#9a4420;background:linear-gradient(135deg,#fffaf3 0%,#ffeeda 55%,#ffe1c4 100%);box-shadow:0 7px 16px rgba(200,120,60,.26),0 1px 3px rgba(189,90,45,.14),inset 0 2px 5px rgba(255,255,255,.95),inset 0 -3px 6px rgba(189,90,45,.12)}
   .tabs button.lead.on{color:#fff;background:linear-gradient(135deg,#f6b26b 0%,#ee8a5a 50%,#e36a6a 100%);box-shadow:0 6px 14px rgba(200,110,70,.36),0 2px 5px rgba(189,70,45,.2),inset 0 2px 6px rgba(255,255,255,.45),inset 0 -3px 6px rgba(160,50,30,.22)}
   @media (max-width:760px){ .tabs button{padding:6px 13px;font-size:13px} }
+  /* PC: [📺 TV][📻 라디오]를 나란히 — 지금 보는 쪽만 색(TV는 파랑, 라디오는 주황), 다른 쪽은 흰 버튼 */
+  .tabs button.tvself{color:#fff;border-color:rgba(255,255,255,.4);text-shadow:0 1px 2px rgba(0,0,0,.15);cursor:default;background:linear-gradient(135deg,#5bb6f5 0%,#3a8be8 50%,#2563d9 100%);box-shadow:0 6px 14px rgba(37,99,217,.36),0 2px 5px rgba(30,70,180,.2),inset 0 2px 6px rgba(255,255,255,.4)}
+  .tabs button.tvself:hover{color:#fff;background:linear-gradient(135deg,#5bb6f5 0%,#3a8be8 50%,#2563d9 100%)}
+  .tabs button.tvself + button.lead, .tabs button.tvself + button.lead:hover{color:#5d6388;background:linear-gradient(135deg,#ffffff 0%,#f4f5fc 50%,#eceafa 100%);box-shadow:0 5px 12px rgba(90,100,180,.2),0 1px 3px rgba(75,45,189,.12),inset 0 2px 5px rgba(255,255,255,.95),inset 0 -3px 6px rgba(75,45,189,.08)}
+  .tabs button.tvself + button.lead:hover{color:#b4532a}
+  .tabs button.tvself + button.lead{margin-right:10px}
 </style>
 </head>
 <body>
@@ -463,7 +469,7 @@ function renderTabs(){
   const LEAD = ["지상파", "뉴스"];   // 맨 앞 두 탭(색을 달리함) → 그다음 방송사별 KBS·SBS·EBS → 해외·미국방송 → 나머지
   const btn = (cat, label, cls) => `<button class="${(cls ? cls + ' ' : '') + (cat===currentCat?'on':'')}" data-cat="${esc(cat)}">${esc(label)}</button>`;
   const abroad = CHANNELS.some(c => c.cat === "해외") ? btn("해외", "해외") : "";
-  $("tabs").innerHTML = '<button type="button" class="nav-back" data-back="1" title="마이웨이 메뉴로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>메뉴</button>' + (IN_FRAME ? '<button type="button" class="lead" data-go="radio" title="라디오 화면으로 바로 가기">📻 라디오</button>' : '') + btn("@kbstv", "KBS") + btn("@ytntv", "YTN") + btn("@yonhaptv", "연합뉴스") + btn("@chosuntv", "TV조선") + btn("@arirangtv", "아리랑TV") + btn("@ebstv", "EBS") + btn("@econtv", "경제TV") + btn("@shoptv", "홈쇼핑") + btn("@btntv", "종교방송&공공") + btn("@linktv", "링크TV") + abroad + btn("@ustv", "미국방송") + cats.filter(c => !LEAD.includes(c) && !DROP_TABS.includes(c)).map(c => btn(c, c)).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
+  $("tabs").innerHTML = '<button type="button" class="nav-back" data-back="1" title="마이웨이 메뉴로 돌아가기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>메뉴</button>' + (IN_FRAME ? (IS_MOBILE ? '' : '<button type="button" class="tvself" data-tvself="1" title="지금 TV를 보고 있어요">📺 TV</button>') + '<button type="button" class="lead" data-go="radio" title="라디오 화면으로 바로 가기">📻 라디오</button>' : '') + btn("@kbstv", "KBS") + btn("@ytntv", "YTN") + btn("@yonhaptv", "연합뉴스") + btn("@chosuntv", "TV조선") + btn("@arirangtv", "아리랑TV") + btn("@ebstv", "EBS") + btn("@econtv", "경제TV") + btn("@shoptv", "홈쇼핑") + btn("@btntv", "종교방송&공공") + btn("@linktv", "링크TV") + abroad + btn("@ustv", "미국방송") + cats.filter(c => !LEAD.includes(c) && !DROP_TABS.includes(c)).map(c => btn(c, c)).join("")   // 지상파 오른쪽에 해외, 그다음 OTT
     + DIRECT_TABS.filter(d => CHANNELS.some(c => c.slug === d[1])).map(d => btn("@" + d[1], d[0])).join("");
   centerTab();
 }
@@ -660,6 +666,7 @@ async function play(slug, noAuto){   // noAuto: 처음 열 때 — 화면은 그
 // 이벤트
 $("tabs").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.tvself) return;   // PC [📺 TV]: 지금 보고 있는 화면 표시용
   if (b.dataset.go) { try { parent.postMessage({ type: "MYWAY_GO_PAGE", page: b.dataset.go }, "https://myway.kr"); } catch(err) {} return; }   // [📻 라디오] → myway.kr이 라디오 화면으로 바로 전환
   if (b.dataset.back) { try { parent.postMessage({ type: "MYWAY_NAVSWAP_BACK" }, "https://myway.kr"); } catch(err) {} return; }   // myway.kr 탭바 다시 보이기
   currentCat = b.dataset.cat; renderTabs(); renderGrid();
